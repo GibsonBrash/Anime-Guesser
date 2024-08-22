@@ -4,13 +4,11 @@ import './App.css'
 
 function App() {
   const [question, setQuestion] = useState(false);
-  const [imageAverageColorsForReal, setImageAverageColorsForReal] = useState(null);
+  const [reveal, setReveal] = useState([]);
 
-  const pixelRef1 = useRef();
-  const pixelRef2 = useRef();
-  const pixelRef3 = useRef();
+
   const imageRef = useRef();
-  let imageAverageColors = useRef(new Array());
+  const imageAverageColors = useRef(new Array());
   const pixelRefArray =  useRef(new Array());
 
   const testRef = useRef();
@@ -19,20 +17,59 @@ function App() {
   const contextImage = useRef(null);
 
   const drawPixel = (canvas, ctx, index) => {
+    let arrayStart = 0;
+    let heightCount = 0;
+    let keepArrayStart = 0;
     
-    let arrayStart = index * 2;
-    let heightCount = index * 14;
+   
+  
+    if(index < 7){
+      arrayStart = index * 2;
+    }
+    if(index > 6 && index < 14){
+      arrayStart = ((index * 2) + 14);
+    }
+    if(index > 13 && index < 21){
+      arrayStart = ((index * 2) + (14 * 2));
+    }
+    if(index > 20 && index < 28){
+      arrayStart = ((index * 2) + (14 * 3));
+    }
+    if(index > 27 && index < 35){
+      arrayStart = ((index * 2) + (14 * 4));
+    }
+    if(index > 34 && index < 42){
+      arrayStart = ((index * 2) + (14 * 5));
+    }
+    if(index > 41 && index < 49){
+      arrayStart = ((index * 2) + (14 * 6));
+    }
+    if(index > 48 && index < 56){
+      arrayStart = ((index * 2) + (14 * 7));
+    }
+    if(index > 55 && index < 63){
+      arrayStart = ((index * 2) + (14 * 8));
+    }
+    if(index > 62 && index < 70){
+      arrayStart = ((index * 2) + (14 * 9));
+    }
     
-  	for(let y = 0; y <= canvas.height; y+=16){
-    	for(let x = 0; x <= canvas.width; x+=16){
+
+    keepArrayStart = arrayStart;
+    
+  	for(let y = 0; y < canvas.height; y+=16){
+      
+    	for(let x = 0; x < canvas.width; x+=16){
+          
           ctx.fillStyle = `rgb(${imageAverageColors.current[arrayStart + heightCount].r}, ${imageAverageColors.current[arrayStart + heightCount].g}, ${imageAverageColors.current[arrayStart + heightCount].b})`;
+          
           ctx.fillRect(x, y, 16, 16);
          
           arrayStart++
       }
       
-      arrayStart = 0;
-      heightCount = 14*(index === 0 ? 1 : index);
+      arrayStart = keepArrayStart;
+      heightCount = 14;
   	}
       
   }
@@ -56,7 +93,7 @@ function App() {
       BlueCount++;
 
     }
-    console.log("countcheck: ", Red, RedCount);
+    //console.log("countcheck: ", Red, RedCount);
     const redAverage = Math.round(Red/RedCount);
     const greenAverage = Math.round(Green/GreenCount);
     const blueAverage = Math.round(Blue/BlueCount);
@@ -83,11 +120,6 @@ function App() {
       
       }
       
-
-      drawPixel(pixelRef1.current, pixelRef1.current.getContext('2d'), 0);
-      drawPixel(pixelRef2.current, pixelRef2.current.getContext('2d'), 1);
-      drawPixel(pixelRef3.current, pixelRef3.current.getContext('2d'), 2);
-
       for(let x = 0; x < pixelRefArray.current.length; x++){
         if(pixelRefArray.current[x]){
           drawPixel(pixelRefArray.current[x], pixelRefArray.current[x].getContext('2d'), x);
@@ -99,7 +131,7 @@ function App() {
 
   const loadImage = () => {
     const newImage = new Image();
-    newImage.src = "https://cdn.myanimelist.net/images/anime/3/20713.jpg";
+    newImage.src = "https://cdn.myanimelist.net/images/anime/12/76049.jpg";
     newImage.crossOrigin = "anonymous";
     newImage.onload = () => {
       
@@ -114,7 +146,7 @@ function App() {
       
     }
   
-    setImageAverageColorsForReal(imageAverageColors);
+   
   }
 
   useEffect(() => {
@@ -124,13 +156,26 @@ function App() {
    
   },[])
 
+  const handlePixelRefArray = (e) => {
+    if(pixelRefArray.current.length < 70){
+      pixelRefArray.current.push(e);
+    }
+  }
+
   const displayCanvas = () => {
     let divs = [];
     for(let x = 0; x < 70; x++){
-      divs.push(<canvas key={x} ref={(e) => pixelRefArray.current.push(e)} height="32px" width="32px"></canvas>);
+
+      //if(x < 3 || (x > 6 && x < 10)){
+       // divs.push(<canvas key={x} ref={(e) => handlePixelRefArray(e)} height="32px" width="32px" style={question ? {opacity: "0"} : {opacity: "1"}}></canvas>);
+     // }else{
+        divs.push(<canvas key={x} ref={(e) => handlePixelRefArray(e)} height="32px" width="32px" style={reveal[x] ? {opacity: "0"} : {opacity: "1"}}></canvas>); 
+     // }
+      
     }
     return divs;
   }
+
   return (
     <>
       <nav>Anime Guesser
@@ -138,9 +183,6 @@ function App() {
       <div className="guessImageContainer">
         <canvas ref={imageRef} id="image"></canvas>
         <div id="pixel-container">
-          <canvas ref={pixelRef1} id="pixel1" height="32px" width="32px" style={question ? {display: "none"} : {display: "block"}}></canvas>
-          <canvas ref={pixelRef2} id="pixel2" height="32px" width="32px" ></canvas>
-          <canvas ref={pixelRef3} id="pixel3" height="32px" width="32px" ></canvas>
          {
           displayCanvas()
          }
@@ -155,5 +197,8 @@ function App() {
   )
 }
 
-
+/*
+<canvas ref={pixelRef1} id="pixel1" height="32px" width="32px" style={question ? {display: "none"} : {display: "block"}}></canvas>
+          
+*/
 export default App
