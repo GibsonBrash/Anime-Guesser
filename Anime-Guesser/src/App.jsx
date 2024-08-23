@@ -4,7 +4,7 @@ import './App.css'
 
 function App() {
   const [question, setQuestion] = useState(false);
-  const [reveal, setReveal] = useState([]);
+  const [reveal, setReveal] = useState(Array(70).fill(false));
 
 
   const imageRef = useRef();
@@ -176,6 +176,19 @@ function App() {
     return divs;
   }
 
+  const handleDisplay = () => {
+    //console.log("reveal", reveal);
+    const revealUpdate = reveal.map((input, index) => {
+      if(0 === index){
+        return !input;
+      }else{
+        return input;
+      }
+    });
+    console.log("reveal", revealUpdate);
+    setReveal(revealUpdate);
+  }
+
   return (
     <>
       <nav>Anime Guesser
@@ -184,13 +197,16 @@ function App() {
         <canvas ref={imageRef} id="image"></canvas>
         <div id="pixel-container">
          {
-          displayCanvas()
+          reveal.map((input, index) => {
+            return(<canvas key={index} ref={(e) => handlePixelRefArray(e)} height="32px" width="32px" style={input ? {opacity: "0"} : {opacity: "1"}}></canvas>)
+          })
          }
         </div>
       </div>
       <button onClick={() => setQuestion(question ? false : true)}>
         big o'l Question
       </button>
+      <button onClick={() => handleDisplay()}>yobro</button>
       <canvas ref={testRef} height="320px" width="224"></canvas>
 
     </>
