@@ -23,15 +23,4 @@
   grid-column: 2;
 }
 
-#test-container{
-  height:320px;
-  width:224px;
-  display: flex;
-  
-}
-.size{
-  height:16px;
-  width:16px;
-  margin:0;
-  color:red;
-}
+

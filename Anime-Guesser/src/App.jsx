@@ -1,17 +1,18 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react';
+import axios from "axios";
+import './App.css';
 
-import './App.css'
 
 function App() {
-  const [question, setQuestion] = useState(false);
+  
   const [reveal, setReveal] = useState(Array(70).fill(false));
-
+  const [searchResults, setSearchResults] = useState();
 
   const imageRef = useRef();
   const imageAverageColors = useRef(new Array());
   const pixelRefArray =  useRef(new Array());
 
-  const testRef = useRef();
+  
 
   const canvasImage = useRef(null);
   const contextImage = useRef(null);
@@ -105,7 +106,7 @@ function App() {
     const height = canvasImage.current.height;
     const width = canvasImage.current.width;
 
-    const ctx = testRef.current.getContext('2d');    
+       
     
     if(imageAverageColors.current.length === 0){
       for(let y = 0; y < height; y+=16){
@@ -113,8 +114,7 @@ function App() {
           const colors = getHandleImageData(contextImage.current.getImageData(x,y,16,16));
           
           
-          ctx.fillStyle = `rgb(${colors.r}, ${colors.g}, ${colors.b})`;
-          ctx.fillRect(x, y, 16, 16);
+          
           imageAverageColors.current.push(colors);
         }
       
@@ -162,22 +162,9 @@ function App() {
     }
   }
 
-  const displayCanvas = () => {
-    let divs = [];
-    for(let x = 0; x < 70; x++){
-
-      //if(x < 3 || (x > 6 && x < 10)){
-       // divs.push(<canvas key={x} ref={(e) => handlePixelRefArray(e)} height="32px" width="32px" style={question ? {opacity: "0"} : {opacity: "1"}}></canvas>);
-     // }else{
-        divs.push(<canvas key={x} ref={(e) => handlePixelRefArray(e)} height="32px" width="32px" style={reveal[x] ? {opacity: "0"} : {opacity: "1"}}></canvas>); 
-     // }
-      
-    }
-    return divs;
-  }
 
   const handleDisplay = () => {
-    //console.log("reveal", reveal);
+  
     const revealUpdate = reveal.map((input, index) => {
       if(0 === index){
         return !input;
@@ -185,8 +172,26 @@ function App() {
         return input;
       }
     });
-    console.log("reveal", revealUpdate);
     setReveal(revealUpdate);
+  }
+
+  const handleGuess = async (e) => {
+    console.log("guess", e.target.value);
+    if(e.target.value.length > 2){
+      await axios.get(`http://localhost:8001/search`, {
+        params:{
+          query:e.target.value
+        },
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then((response) => {
+        console.log("response, ", response.data.data);
+        setSearchResults(response.data.data);
+      }).catch((err) => {
+        console.log("error: ", err);
+      });
+    }
   }
 
   return (
@@ -203,18 +208,24 @@ function App() {
          }
         </div>
       </div>
-      <button onClick={() => setQuestion(question ? false : true)}>
-        big o'l Question
-      </button>
-      <button onClick={() => handleDisplay()}>yobro</button>
-      <canvas ref={testRef} height="320px" width="224"></canvas>
-
+      <div>
+        <input onChange={(e) => handleGuess(e)} />
+        <button onClick={() => handleDisplay()}>Guess</button>
+      </div>
+      <div>
+        <ul>
+          {
+            searchResults ? searchResults.map((item, index) =>{
+              return(<li key={index}>{item.node.title}</li>)
+            }) 
+            :
+            <li>fug</li>
+          }
+        </ul>
+      </div>
     </>
   )
 }
 
-/*
-<canvas ref={pixelRef1} id="pixel1" height="32px" width="32px" style={question ? {display: "none"} : {display: "block"}}></canvas>
-          
-*/
+
 export default App
