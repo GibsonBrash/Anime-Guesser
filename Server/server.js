@@ -4,6 +4,8 @@ import cors from "cors";
 import { nanoid } from "nanoid";
 import cookieParser from "cookie-parser";
 import crypto from "crypto";
+import { MongoClient, ServerApiVersion }from "mongodb";
+
 
 const port = process.env.PORT || 8000;
 const id = process.env.MYANIMELIST_ID;
@@ -12,11 +14,46 @@ const secret = process.env.MYANIMELIST_SECRET;
 const app = express();
 
 app.use(cors());
-app.use(cookieParser(process.env.COOKIE_SECRET))
+app.use(cookieParser(process.env.COOKIE_SECRET));
+
 
 app.get('/', (req, res) =>{
     res.send('hello world');
 });
+
+const client = new MongoClient(process.env.MONGODB_URI, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+});
+
+const addToDatabase = async (data) =>{
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+        const options = { ordered: true};
+        const response = await client.db('Anime-Guesser').collection('AnimeList').insertMany(data, options);
+        console.log("response ", response);
+    }finally{
+        await client.close();
+    }
+}
+
+const filterAnime = (data) => {
+    let buffer = [];
+    for(let x = 0; x < data.length; x++){
+        if(data[x].node.media_type !== "Music"){
+            buffer.push(data[x].node);
+        }
+    }
+    return buffer;
+}
 
 app.get('/search', (req, res) => {
     
@@ -31,6 +68,30 @@ app.get('/search', (req, res) => {
     }).catch((err) => res.status(500).json({ err: err.message }));
  
 });
+
+app.get('/fillDataBase', (req, res) => {
+    axios.get(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=2&offset=2&fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,rating,pictures,background,studios`, {
+        headers:{
+            "X-MAL-CLIENT-ID":id
+        }
+    }).then((response) => {
+        const anime = filterAnime(response.data.data);
+        addToDatabase(anime);
+        res.json(anime);
+    }).catch((err) => res.status(500).json({ err: err.message }));
+});
+
+
+app.get('/animeByID', (req, res) => {
+    axios.get(`https://api.myanimelist.net/v2/anime/39792?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,studios`, {
+        headers:{
+            "X-MAL-CLIENT-ID":id
+        }
+    }).then((response) => {
+        res.json(response.data);
+    }).catch((err) => res.status(500).json({ err: err.message }));
+});
+
 
 app.get('/login', (req, res) =>{
 

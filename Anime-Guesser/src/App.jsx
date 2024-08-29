@@ -131,7 +131,7 @@ function App() {
 
   const loadImage = () => {
     const newImage = new Image();
-    newImage.src = "https://cdn.myanimelist.net/images/anime/12/76049.jpg";
+    newImage.src = "https://cdn.myanimelist.net/images/anime/1015/138006.jpg";
     newImage.crossOrigin = "anonymous";
     newImage.onload = () => {
       
@@ -191,6 +191,8 @@ function App() {
       }).catch((err) => {
         console.log("error: ", err);
       });
+    }else if(searchResults){
+      setSearchResults(null);
     }
   }
 
@@ -219,7 +221,7 @@ function App() {
               return(<li key={index}>{item.node.title}</li>)
             }) 
             :
-            <li>fug</li>
+            <></>
           }
         </ul>
       </div>
