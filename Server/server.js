@@ -16,11 +16,6 @@ const app = express();
 app.use(cors());
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
-
-app.get('/', (req, res) =>{
-    res.send('hello world');
-});
-
 const client = new MongoClient(process.env.MONGODB_URI, {
     serverApi: {
       version: ServerApiVersion.v1,
@@ -28,6 +23,102 @@ const client = new MongoClient(process.env.MONGODB_URI, {
       deprecationErrors: true,
     }
 });
+
+//setInterval(setDailyAnime,1000 * 60 * 60 * 24);
+
+const setDailyAnime = async () => {
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+
+        const updateDoc = {
+            $set: {
+                usedForToday: false
+            },
+        };
+        const updateDaily = {
+            $set: {
+                usedForDaily: true,
+                usedForToday: true
+            },
+        };
+
+        const findYesturday = await client.db('Anime-Guesser').collection('AnimeList').updateOne({usedForToday: true}, updateDoc);
+        let findAnime = true;
+        let buffer = []
+        while(findAnime){
+            const randomNumber= crypto.randomInt(1, 4001);
+            if(!buffer.find((e) => e === randomNumber)){
+                const findNew = await client.db('Anime-Guesser').collection('AnimeList').findOne({rank: randomNumber});
+                if(findNew.usedForDaily !== true){
+                    const setNew = await client.db('Anime-Guesser').collection('AnimeList').updateOne({rank: findNew.rank}, updateDaily);
+                    console.log("setnew ", setNew);
+                    findAnime = false;
+                }
+            }
+        }
+        
+        console.log("find yesturday, ", findYesturday);
+        //console.log("setnew ", setNew);
+        
+        
+    }finally{
+        await client.close();
+    }
+}
+
+
+
+
+const getDailyAnime = async () => {
+    let findDaily;
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+        findDaily = await client.db('Anime-Guesser').collection('AnimeList').findOne({usedForToday: true});
+        //console.log("response, ", findDaily);
+    }finally{
+        await client.close();
+        
+    }
+    return findDaily;
+}
+
+
+
+
+
+const addField = async () => {
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+
+        const updateDoc = {
+            $set: {
+                usedForToday: false
+            },
+        };
+        
+        const response = await client.db('Anime-Guesser').collection('AnimeList').updateMany({}, updateDoc);
+        console.log("response ", response);
+       
+    }finally{
+        await client.close();
+    }
+    
+}
 
 const addToDatabase = async (data) =>{
     try{
@@ -55,22 +146,27 @@ const filterAnime = (data) => {
     return buffer;
 }
 
+app.get('/', (req, res) =>{
+    res.send('hello world');
+});
+
+
+app.get('/getDailyAnime', async (req, res) => {
+    const daily = await getDailyAnime();
+    res.json(daily);
+});
+
 app.get('/search', (req, res) => {
     
     const { query } = req.query;
-    console.log("req: ", query);
-    axios.get(`https://api.myanimelist.net/v2/anime?q=${query}&limit=10`, {
-        headers:{
-            "X-MAL-CLIENT-ID":id
-        }
-    }).then((response) => {
-        res.json(response.data);
-    }).catch((err) => res.status(500).json({ err: err.message }));
+    res.send(query);
+    
  
 });
 
+
 app.get('/fillDataBase', (req, res) => {
-    axios.get(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=2&offset=2&fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,rating,pictures,background,studios`, {
+    axios.get(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=500&offset=4000&fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,rating,pictures,background,studios`, {
         headers:{
             "X-MAL-CLIENT-ID":id
         }
@@ -78,17 +174,6 @@ app.get('/fillDataBase', (req, res) => {
         const anime = filterAnime(response.data.data);
         addToDatabase(anime);
         res.json(anime);
-    }).catch((err) => res.status(500).json({ err: err.message }));
-});
-
-
-app.get('/animeByID', (req, res) => {
-    axios.get(`https://api.myanimelist.net/v2/anime/39792?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,studios`, {
-        headers:{
-            "X-MAL-CLIENT-ID":id
-        }
-    }).then((response) => {
-        res.json(response.data);
     }).catch((err) => res.status(500).json({ err: err.message }));
 });
 
