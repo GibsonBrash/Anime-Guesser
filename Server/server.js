@@ -19,7 +19,6 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 const client = new MongoClient(process.env.MONGODB_URI, {
     serverApi: {
       version: ServerApiVersion.v1,
-      strict: true,
       deprecationErrors: true,
     }
 });
@@ -156,11 +155,37 @@ app.get('/getDailyAnime', async (req, res) => {
     res.json(daily);
 });
 
-app.get('/search', (req, res) => {
+app.get('/search', async (req, res) => {
     
     const { query } = req.query;
-    res.send(query);
     
+    try{
+
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+        console.log("query: ", query );
+        const filter = { $text: { $search: query } };
+        
+        const options = {
+            limit: 10,
+            sort: { score: { $meta: "textScore" } },
+            projection: { _id: 0, title: 1, alternative_titles: 1},
+        };
+        await client.db('Anime-Guesser').collection('AnimeList').createIndex({title: "text", "alternative_titles.en": "text"});
+        const response = await client.db('Anime-Guesser').collection('AnimeList').find(filter, options).toArray();
+        if ((await client.db('Anime-Guesser').collection('AnimeList').countDocuments(filter)) === 0) {
+            console.log("reponse, ", response);
+        }
+        
+        res.status(200).json(response);
+      
+    }catch(err){
+        res.status(400).send(`didn't work:  ${err}`);
+    }  
  
 });
 

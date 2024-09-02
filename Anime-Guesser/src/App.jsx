@@ -186,8 +186,8 @@ function App() {
           "Content-Type": "application/json"
         }
       }).then((response) => {
-        console.log("response, ", response.data.data);
-        setSearchResults(response.data.data);
+        console.log("response, ", response.data);
+        setSearchResults(response.data);
       }).catch((err) => {
         console.log("error: ", err);
       });
@@ -218,7 +218,7 @@ function App() {
         <ul>
           {
             searchResults ? searchResults.map((item, index) =>{
-              return(<li key={index}>{item.node.title}</li>)
+              return(<li key={index}>{item.title}</li>)
             }) 
             :
             <></>
