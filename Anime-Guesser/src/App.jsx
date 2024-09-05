@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback} from 'react';
 import axios from "axios";
 import './App.css';
 
@@ -7,15 +7,59 @@ function App() {
   
   const [reveal, setReveal] = useState(Array(70).fill(false));
   const [searchResults, setSearchResults] = useState();
+  const [guessValue, setGuessValue] = useState('');
+  const [loadSpinner, setLoadSpinner] = useState(false);
+  const [showDropDown, setShowDropDown] = useState("none");
+  const [dropDownHeight, setDropDownHeight] = useState("200px");
+  const [dailyAnimeInfo, setDailyAnimeInfo] = useState(null);
+
+  const [guessData, setGuessData] = useState(null);
+  const [unveilAnime,  setUnveilAnime] = useState("block");
 
   const imageRef = useRef();
   const imageAverageColors = useRef(new Array());
   const pixelRefArray =  useRef(new Array());
+  
+
+  const dropdownRef = useCallback(node => {
+    if (!node) return;
+      const resizeObserver = new ResizeObserver(() => { 
+        console.log("node1, ", node.clientHeight);
+        console.log("drop1, ", dropDownHeight);
+         if(node.clientHeight < 200 && node.clientHeight > 0){
+            console.log("node, ", node.clientHeight);
+            console.log("drop, ", dropDownHeight);
+            setDropDownHeight("fit-content");
+          }else if(node.clientHeight >= 200){
+            setDropDownHeight("200px");
+          } 
+      });
+    
+      resizeObserver.observe(node);
+    
+  }, []);
 
   
 
   const canvasImage = useRef(null);
   const contextImage = useRef(null);
+
+
+  useEffect( () => {
+    async function getDailyAnime(){ 
+      await axios.get("http://localhost:8001/getDailyAnime")
+      .then((response) => {
+        console.log("anime daily iamge, ", response.data);  
+        loadImage(response.data);
+        setDailyAnimeInfo(response.data);
+      }).catch((err) => {
+        console.log("error: ", err);
+      });
+    }
+    getDailyAnime();
+   
+  },[])
+
 
   const drawPixel = (canvas, ctx, index) => {
     let arrayStart = 0;
@@ -129,9 +173,9 @@ function App() {
 
   }
 
-  const loadImage = () => {
+  const loadImage = (data) => {
     const newImage = new Image();
-    newImage.src = "https://cdn.myanimelist.net/images/anime/1015/138006.jpg";
+    newImage.src = data.main_picture.medium || "https://cdn.myanimelist.net/images/anime/1015/138006.jpg";
     newImage.crossOrigin = "anonymous";
     newImage.onload = () => {
       
@@ -149,12 +193,7 @@ function App() {
    
   }
 
-  useEffect(() => {
-    
-    
-    loadImage();
-   
-  },[])
+  
 
   const handlePixelRefArray = (e) => {
     if(pixelRefArray.current.length < 70){
@@ -172,37 +211,92 @@ function App() {
         return input;
       }
     });
-    setReveal(revealUpdate);
+    if(guessData){
+      if(guessData.id === dailyAnimeInfo.id){
+        console.log("LETS FUCKING GO ENGALADAND");
+        setUnveilAnime("none");
+      }else{
+        setReveal(revealUpdate);
+      }
+    }
   }
 
-  const handleGuess = async (e) => {
-    console.log("guess", e.target.value);
-    if(e.target.value.length > 2){
+  const handleGuess = async () => {
+    
       await axios.get(`http://localhost:8001/search`, {
         params:{
-          query:e.target.value
+          query:guessValue
         },
         headers: {
           "Content-Type": "application/json"
         }
       }).then((response) => {
         console.log("response, ", response.data);
+        
+        setLoadSpinner(false);
         setSearchResults(response.data);
+        setGuessData(null);
+        
+        console.log("we made it!", guessValue);
+        
       }).catch((err) => {
         console.log("error: ", err);
       });
-    }else if(searchResults){
-      setSearchResults(null);
+    
+    
+  }
+
+  useEffect(() => {
+    if(guessData === null){
+      if(loadSpinner === false){
+        setLoadSpinner(true);
+      }
+      
+      if(guessValue.length > 0){
+        if(showDropDown === "none"){
+          setShowDropDown("block");
+        }
+        const delayDebounceFn = setTimeout(() => {
+          handleGuess();
+        }, 500);
+      
+        return () => clearTimeout(delayDebounceFn)
+      }else{
+        if(showDropDown === "block"){
+          setShowDropDown("none");
+        }
+      }
     }
+  }, [guessValue]);
+
+  
+
+  const handleItemGuess = (item) => {
+    console.log("worky twerk");
+    setShowDropDown("none");
+    setGuessValue(item.alternative_titles.en);
+    setGuessData(item);
+    
+  }
+
+  const handleDropDownFocus = () =>{
+    if(guessValue.length > 0){
+      setShowDropDown("block");
+    }
+  }
+
+  const handleDropDownBlur = () =>{
+    setShowDropDown("none");
   }
 
   return (
     <>
-      <nav>Anime Guesser
+      <nav>
+        Anime Guesser
       </nav>
       <div className="guessImageContainer">
         <canvas ref={imageRef} id="image"></canvas>
-        <div id="pixel-container">
+        <div id="pixel-container" style={{display: unveilAnime}}>
          {
           reveal.map((input, index) => {
             return(<canvas key={index} ref={(e) => handlePixelRefArray(e)} height="32px" width="32px" style={input ? {opacity: "0"} : {opacity: "1"}}></canvas>)
@@ -211,20 +305,27 @@ function App() {
         </div>
       </div>
       <div>
-        <input onChange={(e) => handleGuess(e)} />
-        <button onClick={() => handleDisplay()}>Guess</button>
-      </div>
-      <div>
-        <ul>
-          {
-            searchResults ? searchResults.map((item, index) =>{
-              return(<li key={index}>{item.title}</li>)
-            }) 
-            :
-            <></>
+        <input className="guessField" autoComplete='off' onFocus={() => handleDropDownFocus()} onBlur={() => handleDropDownBlur()} onChange={(e) => {setGuessValue(e.target.value); setGuessData(null)}} placeholder='Search for an Anime' value={guessValue}/>
+        <div className='dropDown' style={{display: showDropDown, height: dropDownHeight}}>
+          {loadSpinner ? 
+          <div>8===D</div> :
+          <ul ref={dropdownRef} className='guessList'>
+            {
+              searchResults ? searchResults.map((item, index) =>{
+                return(<li key={index} onMouseDown={(e) => e.preventDefault()} onClick={() => handleItemGuess(item)}>{item.alternative_titles.en}</li>)
+              }) 
+              :
+              <></>
+            }
+          </ul>
           }
-        </ul>
+        </div>
+        <div className='button-container'>
+          <button className="skipButton">Skip</button>
+          <button className="guessButton" onClick={() => handleDisplay()}>Guess</button>
+        </div>
       </div>
+      
     </>
   )
 }

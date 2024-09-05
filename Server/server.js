@@ -83,15 +83,17 @@ const getDailyAnime = async () => {
             return;
         }
         findDaily = await client.db('Anime-Guesser').collection('AnimeList').findOne({usedForToday: true});
-        //console.log("response, ", findDaily);
+        if ((await client.db('Anime-Guesser').collection('AnimeList').countDocuments({usedForToday: true})) === 0) {
+            console.log("reponse, ", response);
+        }
+
+        console.log("response, ", findDaily);
     }finally{
-        await client.close();
+        console.log("*farts nasty big green stink bubble* finally ... peace at last");
         
     }
     return findDaily;
 }
-
-
 
 
 
@@ -155,6 +157,11 @@ app.get('/getDailyAnime', async (req, res) => {
     res.json(daily);
 });
 
+app.get('/makeGuess', async (req, res) =>{
+    const {guess} = req.query;
+
+});
+
 app.get('/search', async (req, res) => {
     
     const { query } = req.query;
@@ -168,19 +175,25 @@ app.get('/search', async (req, res) => {
             return;
         }
         console.log("query: ", query );
-        const filter = { $text: { $search: query } };
+      
         
-        const options = {
-            limit: 10,
-            sort: { score: { $meta: "textScore" } },
-            projection: { _id: 0, title: 1, alternative_titles: 1},
+        const filter = {
+            $or:[
+                {title:{$regex: `^${query}`, $options:"i"}},
+                {"alternative_titles.en":{$regex: `^${query}`, $options:"i"}},
+                {"alternative_titles.synonyms":{$in:[query]}}
+            ]
         };
-        await client.db('Anime-Guesser').collection('AnimeList').createIndex({title: "text", "alternative_titles.en": "text"});
+
+        const options = { 
+            projection: { _id: 0, id:1, title: 1, alternative_titles: 1},
+        };
+        
         const response = await client.db('Anime-Guesser').collection('AnimeList').find(filter, options).toArray();
         if ((await client.db('Anime-Guesser').collection('AnimeList').countDocuments(filter)) === 0) {
             console.log("reponse, ", response);
         }
-        
+        console.log(response);
         res.status(200).json(response);
       
     }catch(err){

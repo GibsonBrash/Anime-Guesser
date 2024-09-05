@@ -23,4 +23,67 @@
   grid-column: 2;
 }
 
+.guessField{
+  width:100%;
+  height:2em;
+  border:1px grey solid;
+  padding:0;
+  margin-bottom:.5rem;
+  margin-top: .5rem;
+}
 
+.dropDown{
+  display:block;
+  z-index: 100;
+  position:absolute;
+  height:200px;
+  width:225px;
+  background-color: white;
+  color:black;
+  overflow: scroll;
+  margin:0;
+
+  container-type: inline-size;
+  container-name: dropdown;
+}
+/*
+@container dropdown (max-height: 200px){
+  .dropDown{
+    height:fit-content;
+  }
+}
+*/
+.guessList{
+  list-style-type: none;
+  padding:0;
+}
+.guessList li{
+  border-bottom: 1px lightgray solid;
+}
+.guessList li:hover{
+  background-color: rgb(211, 211, 211);
+  cursor: pointer;
+}
+
+.button-container{
+  display: flex;
+  justify-content: space-between;
+  
+}
+
+.skipButton{
+  width: 35%;
+  border:0;
+  border-radius: 0;
+  background-color: #f4aa89;
+  font-weight: 900;
+  text-shadow: 1px 1px black;
+}
+.guessButton{
+  width: 60%;
+  border:0;
+  border-radius: 0;
+  background-color: #a958a5;
+  font-weight: 900;
+  text-shadow: 1px 1px black;
+}
