@@ -13,8 +13,12 @@ function App() {
   const [dropDownHeight, setDropDownHeight] = useState("200px");
   const [dailyAnimeInfo, setDailyAnimeInfo] = useState(null);
 
+  const [life, setLife] = useState({life1: null, life2: null, life3: null, life4: null, life5: null, life6: null});
+  const [lifeCounter, setLifeCounter] = useState(6);
+  const [guessDataHistory, setGuessDataHistory] = useState([]);
+
   const [guessData, setGuessData] = useState(null);
-  const [unveilAnime,  setUnveilAnime] = useState("block");
+  const [unveilAnime,  setUnveilAnime] = useState("grid");
 
   const imageRef = useRef();
   const imageAverageColors = useRef(new Array());
@@ -217,6 +221,38 @@ function App() {
         setUnveilAnime("none");
       }else{
         setReveal(revealUpdate);
+        
+        switch(lifeCounter){
+          case 1:
+            setUnveilAnime("none");
+            setLife({...life, life1:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            break;
+          case 2:
+            setLifeCounter(1);
+            setLife({...life, life2:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            break;  
+          case 3:
+            setLifeCounter(2);
+            setLife({...life, life3:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            break;
+          case 4:
+            setLifeCounter(3);
+            setLife({...life, life4:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            break;
+          case 5:
+            setLifeCounter(4);
+            setLife({...life, life5:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            break;
+          case 6:
+            setLifeCounter(5);
+            setLife({...life, life6:true});
+            setGuessDataHistory(array => [...array, guessData]);
+        }
       }
     }
   }
@@ -289,6 +325,43 @@ function App() {
     setShowDropDown("none");
   }
 
+  const handleSkip = () => {
+        const revealUpdate = reveal.map((input, index) => {
+          if(0 === index){
+            return !input;
+          }else{
+            return input;
+          }
+        });
+        setReveal(revealUpdate);
+        switch(lifeCounter){
+          case 1:
+            setUnveilAnime("none");
+            setLife({...life, life1:true});
+            break;
+          case 2:
+            setLifeCounter(1);
+            setLife({...life, life2:true});
+            break;  
+          case 3:
+            setLifeCounter(2);
+            setLife({...life, life3:true});
+            break;
+          case 4:
+            setLifeCounter(3);
+            setLife({...life, life4:true});
+            break;
+          case 5:
+            setLifeCounter(4);
+            setLife({...life, life5:true});
+            break;
+          case 6:
+            setLifeCounter(5);
+            setLife({...life, life6:true});
+            
+        }
+  }
+
   return (
     <>
       <nav>
@@ -321,8 +394,26 @@ function App() {
           }
         </div>
         <div className='button-container'>
-          <button className="skipButton">Skip</button>
+          <button className="skipButton" onClick={() => handleSkip()}>Skip</button>
           <button className="guessButton" onClick={() => handleDisplay()}>Guess</button>
+        </div>
+      </div>
+      <div>
+        <div className='lifeCounter'>
+         { life.life1 ? <div>X</div> : <div className='life'>Life 1</div> }
+         { life.life2 ? <div>X</div> : <div className='life'>Life 2</div> }
+         { life.life3 ? <div>X</div> : <div className='life'>Life 3</div> }
+         { life.life4 ? <div>X</div> : <div className='life'>Life 4</div> }
+         { life.life5 ? <div>X</div> : <div className='life'>Life 5</div> }
+         { life.life6 ? <div>X</div> : <div className='life'>Life 6</div> }
+        </div>
+        <div className='guessHistory'>
+         { life.life6 ? <div className='guess'>{guessDataHistory[0].alternative_titles.en}</div> : <></> }
+         { life.life5 ? <div className='guess'>{guessDataHistory[1].alternative_titles.en}</div> : <></> }
+         { life.life4 ? <div className='guess'>{guessDataHistory[2].alternative_titles.en}</div> : <></> }
+         { life.life3 ? <div className='guess'>{guessDataHistory[3].alternative_titles.en}</div> : <></> }
+         { life.life2 ? <div className='guess'>{guessDataHistory[4].alternative_titles.en}</div> : <></> }
+         { life.life1 ? <div className='guess'>{guessDataHistory[5].alternative_titles.en}</div> : <></> }
         </div>
       </div>
       
