@@ -23,6 +23,8 @@ function App() {
   const imageRef = useRef();
   const imageAverageColors = useRef(new Array());
   const pixelRefArray =  useRef(new Array());
+  const canvasImage = useRef(null);
+  const contextImage = useRef(null);
   
 
   const dropdownRef = useCallback(node => {
@@ -45,8 +47,7 @@ function App() {
 
   
 
-  const canvasImage = useRef(null);
-  const contextImage = useRef(null);
+
 
 
   useEffect( () => {
@@ -56,6 +57,7 @@ function App() {
         console.log("anime daily iamge, ", response.data);  
         loadImage(response.data);
         setDailyAnimeInfo(response.data);
+        setReveal(handleSectionReveal(1));
       }).catch((err) => {
         console.log("error: ", err);
       });
@@ -206,22 +208,138 @@ function App() {
   }
 
 
+  const handleSectionReveal = (guessNum) => {
+    switch(guessNum){
+      case 1:
+        return (
+          reveal.map((input, index) => {
+            switch(index){
+              case 5:
+                return !input;
+              case 6: 
+                return !input;
+              case 12:
+                return !input;
+              case 13:
+                return !input;
+              case 19:
+                return !input;
+              case 20:
+                return !input;  
+              default:
+                return input;
+            }
+         }));
+      case 2:
+        return( 
+          reveal.map((input, index) => {
+            switch(index){
+              case 21:
+                return !input;
+              case 22: 
+                return !input;
+              case 28:
+                return !input;
+              case 29:
+                return !input;
+              case 35:
+                return !input;
+              case 36:
+                return !input;  
+              default:
+                return input;
+            }
+          }));
+      case 3:
+        return(
+          reveal.map((input, index) => {
+            switch(index){
+              case 54:
+                return !input;
+              case 55: 
+                return !input;
+              case 61:
+                return !input;
+              case 62:
+                return !input;
+              case 68:
+                return !input;
+              case 69:
+                return !input;  
+              default:
+                return input;
+            }
+          }));
+      case 4:
+        return(
+          reveal.map((input, index) => {
+            switch(index){
+              case 52:
+                return !input;
+              case 53: 
+                return !input;
+              case 59:
+                return !input;
+              case 60:
+                return !input;
+              case 66:
+                return !input;
+              case 67:
+                return !input;  
+              default:
+                return input;
+            }
+          }));
+      case 5:
+        return(
+          reveal.map((input, index) => {
+            switch(index){
+              case 26:
+                return !input;
+              case 27: 
+                return !input;
+              case 33:
+                return !input;
+              case 34:
+                return !input;
+              case 40:
+                return !input;
+              case 41:
+                return !input;  
+              default:
+                return input;
+            }
+          }))
+      case 6:
+        return(
+          reveal.map((input, index) => {
+            switch(index){
+              case 26:
+                return !input;
+              case 27: 
+                return !input;
+              case 33:
+                return !input;
+              case 34:
+                return !input;
+              case 40:
+                return !input;
+              case 41:
+                return !input;  
+              default:
+                return input;
+            }
+          }));
+    }
+  }
+
   const handleDisplay = () => {
   
-    const revealUpdate = reveal.map((input, index) => {
-      if(0 === index){
-        return !input;
-      }else{
-        return input;
-      }
-    });
     if(guessData){
       if(guessData.id === dailyAnimeInfo.id){
         console.log("LETS FUCKING GO ENGALADAND");
         setUnveilAnime("none");
       }else{
-        setReveal(revealUpdate);
-        
         switch(lifeCounter){
           case 1:
             setUnveilAnime("none");
@@ -229,26 +347,31 @@ function App() {
             setGuessDataHistory(array => [...array, guessData]);
             break;
           case 2:
+            setReveal(handleSectionReveal(6));
             setLifeCounter(1);
             setLife({...life, life2:true});
             setGuessDataHistory(array => [...array, guessData]);
             break;  
           case 3:
+            setReveal(handleSectionReveal(5));
             setLifeCounter(2);
             setLife({...life, life3:true});
             setGuessDataHistory(array => [...array, guessData]);
             break;
           case 4:
+            setReveal(handleSectionReveal(4));
             setLifeCounter(3);
             setLife({...life, life4:true});
             setGuessDataHistory(array => [...array, guessData]);
             break;
           case 5:
+            setReveal(handleSectionReveal(3));
             setLifeCounter(4);
             setLife({...life, life5:true});
             setGuessDataHistory(array => [...array, guessData]);
             break;
           case 6:
+            setReveal(handleSectionReveal(2));
             setLifeCounter(5);
             setLife({...life, life6:true});
             setGuessDataHistory(array => [...array, guessData]);
@@ -273,7 +396,7 @@ function App() {
         setSearchResults(response.data);
         setGuessData(null);
         
-        console.log("we made it!", guessValue);
+        
         
       }).catch((err) => {
         console.log("error: ", err);
@@ -338,28 +461,71 @@ function App() {
           case 1:
             setUnveilAnime("none");
             setLife({...life, life1:true});
+            setGuessDataHistory(array => [...array, "Skip"]);
             break;
           case 2:
             setLifeCounter(1);
             setLife({...life, life2:true});
+            setGuessDataHistory(array => [...array, "Skip"]);
             break;  
           case 3:
             setLifeCounter(2);
             setLife({...life, life3:true});
+            setGuessDataHistory(array => [...array, "Skip"]);
             break;
           case 4:
             setLifeCounter(3);
             setLife({...life, life4:true});
+            setGuessDataHistory(array => [...array, "Skip"]);
             break;
           case 5:
             setLifeCounter(4);
             setLife({...life, life5:true});
+            setGuessDataHistory(array => [...array, "Skip"]);
             break;
           case 6:
             setLifeCounter(5);
             setLife({...life, life6:true});
+            setGuessDataHistory(array => [...array, "Skip"]);
             
         }
+  }
+
+
+  const handleGuessHistory = (guessNum) =>{
+    return(
+      <div className='guessInfo'>
+        <div className='guess'>
+          {guessDataHistory[guessNum] === "Skip" ? (guessDataHistory[guessNum]) : (guessDataHistory[guessNum].alternative_titles.en.length > 18 ? guessDataHistory[guessNum].alternative_titles.en.slice(0,18) + "..." : guessDataHistory[guessNum].alternative_titles.en )}
+          <span className="tooltiptext">{guessDataHistory[guessNum] === "Skip" ? guessDataHistory[guessNum] : guessDataHistory[guessNum].alternative_titles.en}</span>
+        </div>
+        <span className='hints'>
+          <div className='genres'>{handleGenres(guessNum)}</div>
+          <div className='studios'>{handleStudios(guessNum)}</div>
+        </span>
+      </div>
+    );
+  }
+
+  const handleGenres = (guessNum) => {
+    return guessDataHistory[guessNum].genres.map((item, index) => {
+      for(let x = 0; x < dailyAnimeInfo.genres.length; x++){
+        if(dailyAnimeInfo.genres[x].id === item.id){
+          return(<div style={{marginLeft: "10px"}} key={index}>{item.name}</div>);
+        }
+      }
+    });
+    
+  }
+
+  const handleStudios = (guessNum) => {
+    return guessDataHistory[guessNum].studios.map((item, index) => {
+      for(let x = 0; x < dailyAnimeInfo.studios.length; x++){
+        if(dailyAnimeInfo.studios[x].id === item.id){
+          return(<div style={{marginLeft: "10px"}} key={index}>{item.name}</div>);
+        }
+      }
+    });
   }
 
   return (
@@ -377,7 +543,7 @@ function App() {
          }
         </div>
       </div>
-      <div>
+      <div className='guessField-Container'>
         <input className="guessField" autoComplete='off' onFocus={() => handleDropDownFocus()} onBlur={() => handleDropDownBlur()} onChange={(e) => {setGuessValue(e.target.value); setGuessData(null)}} placeholder='Search for an Anime' value={guessValue}/>
         <div className='dropDown' style={{display: showDropDown, height: dropDownHeight}}>
           {loadSpinner ? 
@@ -398,24 +564,23 @@ function App() {
           <button className="guessButton" onClick={() => handleDisplay()}>Guess</button>
         </div>
       </div>
-      <div>
-        <div className='lifeCounter'>
-         { life.life1 ? <div>X</div> : <div className='life'>Life 1</div> }
-         { life.life2 ? <div>X</div> : <div className='life'>Life 2</div> }
-         { life.life3 ? <div>X</div> : <div className='life'>Life 3</div> }
-         { life.life4 ? <div>X</div> : <div className='life'>Life 4</div> }
-         { life.life5 ? <div>X</div> : <div className='life'>Life 5</div> }
-         { life.life6 ? <div>X</div> : <div className='life'>Life 6</div> }
-        </div>
-        <div className='guessHistory'>
-         { life.life6 ? <div className='guess'>{guessDataHistory[0].alternative_titles.en}</div> : <></> }
-         { life.life5 ? <div className='guess'>{guessDataHistory[1].alternative_titles.en}</div> : <></> }
-         { life.life4 ? <div className='guess'>{guessDataHistory[2].alternative_titles.en}</div> : <></> }
-         { life.life3 ? <div className='guess'>{guessDataHistory[3].alternative_titles.en}</div> : <></> }
-         { life.life2 ? <div className='guess'>{guessDataHistory[4].alternative_titles.en}</div> : <></> }
-         { life.life1 ? <div className='guess'>{guessDataHistory[5].alternative_titles.en}</div> : <></> }
-        </div>
+      <div className='lifeCounter'>
+        { life.life1 ? <div>X</div> : <div className='life'>Life 1</div> }
+        { life.life2 ? <div>X</div> : <div className='life'>Life 2</div> }
+        { life.life3 ? <div>X</div> : <div className='life'>Life 3</div> }
+        { life.life4 ? <div>X</div> : <div className='life'>Life 4</div> }
+        { life.life5 ? <div>X</div> : <div className='life'>Life 5</div> }
+        { life.life6 ? <div>X</div> : <div className='life'>Life 6</div> }
       </div>
+      <div className='guessHistory'>
+        { life.life6 ? handleGuessHistory(0) : <></> }
+        { life.life5 ? handleGuessHistory(1) : <></> }
+        { life.life4 ? handleGuessHistory(2) : <></> }
+        { life.life3 ? handleGuessHistory(3) : <></> }
+        { life.life2 ? handleGuessHistory(4) : <></> }
+        { life.life1 ? handleGuessHistory(5) : <></> }
+      </div>
+        
       
     </>
   )

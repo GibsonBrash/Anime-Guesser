@@ -185,11 +185,9 @@ app.get('/search', async (req, res) => {
             ]
         };
 
-        const options = { 
-            projection: { _id: 0, id:1, title: 1, alternative_titles: 1},
-        };
         
-        const response = await client.db('Anime-Guesser').collection('AnimeList').find(filter, options).toArray();
+        
+        const response = await client.db('Anime-Guesser').collection('AnimeList').find(filter).toArray();
         if ((await client.db('Anime-Guesser').collection('AnimeList').countDocuments(filter)) === 0) {
             console.log("reponse, ", response);
         }
