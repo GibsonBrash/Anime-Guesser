@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback} from 'react';
 import axios from "axios";
 import './App.css';
-
+import Bones from "./svg/bones.jsx";
 
 function App() {
   
@@ -698,9 +698,15 @@ function App() {
 
   return (
     <>
-      <nav>
-        Anime Guesser
+      <nav className='navbar-Container'>
+        <div className='siteName'>Anime Guesser</div>
+        <div className='utlities'>
+          <div>Archive</div>
+          &nbsp;&nbsp;
+          <div>About</div>
+        </div>
       </nav>
+      <div className='game-container'>
       <div className='dailyAnime-Container'>
         <div className="guessImageContainer">
           <canvas ref={imageRef} id="image"></canvas>
@@ -714,10 +720,10 @@ function App() {
         </div>
         {dailyAnimeInfo ?
           <div className="dailyAnimeInfo-Container" style={{display:showDailyAnimeInfo}}>
-            <div>{dailyAnimeInfo.title}</div>
-            <div>Year: {dailyAnimeInfo.start_season.year}</div>
-            <div>Episodes: {dailyAnimeInfo.num_episodes}</div>
-            <div>Status: {dailyAnimeInfo.status}</div>
+            <h3 className='dailyAnimeInfo-Title'>{dailyAnimeInfo.title}</h3>
+            <div className='infoItem-Container'><div className="label">Year:&nbsp;</div><span>{dailyAnimeInfo.start_season.year}</span></div>
+            <div className='infoItem-Container'><div className="label">Episodes:&nbsp;</div><div>{dailyAnimeInfo.num_episodes}</div></div>
+            <div>Status: {dailyAnimeInfo.status === "finished_airing" ? "Finished Airing": dailyAnimeInfo.status}</div>
             <div>MAL Score: {dailyAnimeInfo.mean}/10</div>
             <div>MAL Rank: {dailyAnimeInfo.rank}</div>
             <div>Rating: {dailyAnimeInfo.rating}</div>
@@ -727,8 +733,19 @@ function App() {
               return(<div key={index}>{genre.name}</div>)
             })}</div>
             <div>Studios: {dailyAnimeInfo.studios.map((studio, index) => {
-              return(<div key={index}>{studio.name}</div>)
+              if(studio.name === "Bones"){
+                return(<Bones />)
+              }else{
+                return(<div key={index}>{studio.name}</div>)
+              }
             })}</div>
+            <i className='altName-label'>Also Known as: </i>
+            <i className='altName-label'>
+              <div>{dailyAnimeInfo.alternative_titles.en}</div>
+              <div>{dailyAnimeInfo.alternative_titles.ja}</div>
+            {dailyAnimeInfo.alternative_titles.synonyms.map((synonyms, index) => {
+              return(<div key={index}>{synonyms}</div>)
+            })}</i>
             <div><a href={`https://myanimelist.net/anime/${dailyAnimeInfo.id}/`}>MyAnimeList Anime Page</a></div>
           </div>
           :
@@ -773,7 +790,7 @@ function App() {
         { life.life1 ? handleGuessHistory(5) : <></> }
       </div>
         
-      
+      </div>
     </>
   )
 }

@@ -108,13 +108,14 @@ const addField = async () => {
 
         const updateDoc = {
             $set: {
+                usedForDaily: false,
                 usedForToday: false
             },
         };
         
         const response = await client.db('Anime-Guesser').collection('AnimeList').updateMany({}, updateDoc);
         console.log("response ", response);
-       
+        
     }finally{
         await client.close();
     }
@@ -155,6 +156,23 @@ app.get('/', (req, res) =>{
 app.get('/getDailyAnime', async (req, res) => {
     const daily = await getDailyAnime();
     res.json(daily);
+});
+
+app.get('/deleteAll', async (req, res) => {
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+      
+        const response = await client.db('Anime-Guesser').collection('AnimeList').deleteMany({});
+        console.log("response ", response);
+        res.send("it hurtz so bed");
+    }finally{
+        await client.close();
+    }
 });
 
 app.get('/makeGuess', async (req, res) =>{
@@ -200,9 +218,17 @@ app.get('/search', async (req, res) => {
  
 });
 
+app.get('/jikan', (req, res) => {
+    axios.get(`https://api.jikan.moe/v4/anime/5114/full`).then((response) => {
+        console.log("ashdf");
+        res.json(response.data);
+    }).catch((err) => res.status(500).json({ err: err.message }));
+});
 
+
+//id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,related_anime,popularity,rating,pictures,background,studios
 app.get('/fillDataBase', (req, res) => {
-    axios.get(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=500&offset=4000&fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,rating,pictures,background,studios`, {
+    axios.get(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=10&offset=0&fields=d,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,related_anime,popularity,rating,pictures,background,studios`, {
         headers:{
             "X-MAL-CLIENT-ID":id
         }
@@ -213,7 +239,14 @@ app.get('/fillDataBase', (req, res) => {
     }).catch((err) => res.status(500).json({ err: err.message }));
 });
 
+app.get('/addField', (req, res) => {
+    addField();
+    res.send("we did it");
+});
 
+//2AuthO
+//Implemented for educational purposes
+//NOT IN USE
 app.get('/login', (req, res) =>{
 
     const stateParam = nanoid();

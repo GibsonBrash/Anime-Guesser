@@ -1,17 +1,38 @@
 #root {
-  max-width: 1280px;
+  width: 100%;
+}
+
+
+
+.navbar-Container{
+  width:40%;
   display: flex;
-  margin: 0 auto;
-  padding: 2rem;
+  position: absolute;
+  top: 0;
+  justify-content: space-between;
+  padding-left: 30%;
+  padding-right: 30%;
+  font-size:30px;
+  background-color: black;
+}
+
+.siteName{
+  
+}
+
+.utlities{
+  display: flex;
+}
+
+
+.game-container{
+  margin-top:5%;
   flex-direction: column;
   text-align: center;
   justify-content: center;
   align-items: center;
+  display: flex;
 
-}
-nav{
-  width:225px;
-  
 }
 
 .dailyAnime-Container{
@@ -42,8 +63,6 @@ nav{
 
 .guessField-Container{
   width:225px;
-  
-  
 }
 
 .dailyAnimeInfo-Container{
@@ -55,6 +74,26 @@ nav{
   text-align: left;
 }
 
+.dailyAnimeInfo-Title{
+  text-align:center;
+  font-weight: 1000;
+}
+
+.infoItem-Container{
+  display: flex;
+  overflow-wrap: normal;
+}
+
+.label{
+  color:#a958a5;
+  font-size: 20px;
+  line-height: 21.5px;
+}
+
+.altName-label{
+  color:gray;
+  font-weight:250;
+}
 
 .guessField{
   width:100%;
