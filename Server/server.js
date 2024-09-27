@@ -148,6 +148,12 @@ const filterAnime = (data) => {
     return buffer;
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+}
+
 app.get('/', (req, res) =>{
     res.send('hello world');
 });
@@ -174,6 +180,56 @@ app.get('/deleteAll', async (req, res) => {
         await client.close();
     }
 });
+
+app.get('/deleteRelatedAnime', async (req, res) => {
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+      
+        const response = await client.db('Anime-Guesser').collection('AnimeList').updateMany({}, {$unset: {related_anime:[]}});
+        console.log("response ", response);
+        res.send("its gone its dead");
+    }finally{
+        await client.close();
+    }
+});
+
+
+app.get('/findSome', async (req, res) => {
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+        //const query = { popularity: { $lt: 980 } };
+
+        const options = {
+        sort: { popularity: 1 },
+        projection: { _id: 0, id: 1, title: 1, popularity: 1, related_anime: 1 },
+
+        };
+        const response = await client.db('Anime-Guesser').collection('AnimeList').find({}, options).toArray();
+        for(let x = 0; x < response.length; x++){
+            for(let y = 0; y < response.length; y++){
+                if(response[x].popularity === response[y].popularity && response[x].id !== response[y].id){
+                    console.log("SEEE: ", response[x]);
+                }
+            }
+        }
+        //console.log("response ", response);
+        res.json(response);
+    }finally{
+        await client.close();
+    }
+});
+
+
 
 app.get('/makeGuess', async (req, res) =>{
     const {guess} = req.query;
@@ -218,17 +274,10 @@ app.get('/search', async (req, res) => {
  
 });
 
-app.get('/jikan', (req, res) => {
-    axios.get(`https://api.jikan.moe/v4/anime/5114/full`).then((response) => {
-        console.log("ashdf");
-        res.json(response.data);
-    }).catch((err) => res.status(500).json({ err: err.message }));
-});
 
-
-//id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,related_anime,popularity,rating,pictures,background,studios
+//FIELDS: id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,related_anime,popularity,rating,pictures,background,studios
 app.get('/fillDataBase', (req, res) => {
-    axios.get(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=10&offset=0&fields=d,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,related_anime,popularity,rating,pictures,background,studios`, {
+    axios.get(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=bypopularity&limit=500&offset=4000&fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,media_type,status,genres,num_episodes,start_season,source,average_episode_duration,related_anime,popularity,rating,pictures,background,studios`, {
         headers:{
             "X-MAL-CLIENT-ID":id
         }
@@ -237,6 +286,162 @@ app.get('/fillDataBase', (req, res) => {
         addToDatabase(anime);
         res.json(anime);
     }).catch((err) => res.status(500).json({ err: err.message }));
+});
+
+app.get('/getById', async (req, res) => {
+
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+        
+        for(let x = 4001; x <= 4000; x++){
+            const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({popularity: x});
+            await axios.get(`https://api.myanimelist.net/v2/anime/${response.id}?fields=related_anime`, {
+                headers:{
+                    "X-MAL-CLIENT-ID":id
+                }
+            }).then(async (respo) => {
+                const update = []
+                for(let y = 0; y < respo.data.related_anime.length; y++){
+                    if(await client.db('Anime-Guesser').collection('AnimeList').countDocuments({id: respo.data.related_anime[y].node.id}) !== 0){
+                        update.push({node:{id: respo.data.related_anime[y].node.id, title: respo.data.related_anime[y].node.title}, relation_type:respo.data.related_anime[y].relation_type});
+                    }
+                }
+                //console.log("puda, ", update);
+                const updateDoc = {
+                    $set: {
+                        related_anime: update
+                    },
+                };
+                await client.db('Anime-Guesser').collection('AnimeList').updateOne({id: response.id}, updateDoc)
+            }).catch((err) => res.status(500).json({ err: err.message }));
+           //left over at 3531
+            await sleep(1000 * 8);
+            console.log("asdf: ", x);
+       }
+       res.send("he");
+    }finally{
+        //await client.close();
+    }    
+    
+});
+
+
+
+const recursiveFill = async (client, relatedAnime) => {
+    if(relatedAnime.related_anime.length !== 0){
+        let buffer = {id:null, related_anime:[]};
+        let globalIndexBuffer = [];
+        //let loopCount = num;
+        for(let loopCount = 0; loopCount < relatedAnime.related_anime.length; loopCount++){
+            const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({id: relatedAnime.related_anime[loopCount].node.id});
+            if(response.related_anime.length === 0){
+                return buffer;
+            }
+            let indexBuffer = Array(response.related_anime.length).fill(true);
+            //console.log("deep, ", response.id);
+            
+            for(let x = 0; x < response.related_anime.length; x++){
+                for(let y = 0; y < relatedAnime.related_anime.length; y++){
+                    if((relatedAnime.related_anime[y].node.id === response.related_anime[x].node.id) || (response.related_anime[x].node.id === relatedAnime.id)){
+                        indexBuffer[x] = false;
+                        //console.log("yet, ", relatedAnime.id);
+                    }
+                }
+            }
+            console.log("here, ", response.id);
+            let indexCount = 0;
+            for(let x = 0; x < response.related_anime.length; x++){
+                console.log("X: ", x);
+                console.log("yet1, ", response.related_anime[x].node.id);
+                console.log("indexBuffer: ", indexBuffer[x]);
+                if(indexBuffer[x]){
+                    console.log("after count1, ", relatedAnime.id);
+                    
+
+                    buffer.related_anime.push(response.related_anime[x]);
+                    console.log("after countnew, ", buffer); 
+                    globalIndexBuffer.push(response.id);
+                }         
+            }
+            
+                
+                
+            
+        }
+        
+        for(let x = 0; x < buffer.related_anime.length; x++){
+            for(let y = 0; y < buffer.related_anime.length; y++){
+                if(buffer.related_anime[y] && buffer.related_anime[x]){
+                    if(buffer.related_anime[x].node.id === buffer.related_anime[y].node.id && x !== y){
+                    
+                        delete buffer.related_anime[x];
+                        delete globalIndexBuffer[x];
+                    }   
+                }
+            }
+        }
+        let duplicateIndex = 0;
+        
+        while(duplicateIndex >= 0){
+            if(buffer.related_anime[duplicateIndex] === undefined && duplicateIndex < buffer.related_anime.length){
+                buffer.related_anime.splice(duplicateIndex, 1);
+                globalIndexBuffer.splice(duplicateIndex, 1);
+                console.log("how it happen: ", duplicateIndex);
+                duplicateIndex = 0;
+            }
+
+            if(duplicateIndex >= buffer.related_anime.length){
+                duplicateIndex = -5;
+            }
+                duplicateIndex++;
+            
+        }
+        
+       console.log("buffer as it stands, ", buffer.related_anime);
+       console.log("buffer length: ", buffer.related_anime.length);
+        console.log("END!!!!!!");
+        console.log("               ");
+        
+        const originalLength = buffer.related_anime.length;
+        if(originalLength > 0){
+            for(let x = 0; x < originalLength; x++){
+                buffer.id = globalIndexBuffer[x]; //make sure there aren't repeat id's
+                buffer.related_anime.push(...relatedAnime.related_anime);
+                const newBuffer = await recursiveFill(client, buffer);
+                if(newBuffer.related_anime.length > 0){
+                    buffer.related_anime.push(...newBuffer.related_anime); 
+                }
+            }
+        } 
+        return buffer; 
+       
+    }else{
+        return [];
+    }  
+}
+
+app.get('/recursiveFill', async (req, res) => {
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+        //for(let x = 4001; x <= 4000; x++){
+            const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({popularity: 1})
+            const buffer = await recursiveFill(client, response);
+            console.log("final buffer: ", buffer);
+        //}
+        res.send(buffer);
+    }finally{
+        await client.close();
+    }
 });
 
 app.get('/addField', (req, res) => {
