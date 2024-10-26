@@ -333,45 +333,39 @@ app.get('/getById', async (req, res) => {
 
 
 const recursiveFill = async (client, relatedAnime) => {
-    if(relatedAnime.related_anime.length !== 0){
+    if(relatedAnime.related_anime.length > 0){
         let buffer = {id:null, related_anime:[]};
         let globalIndexBuffer = [];
-        //let loopCount = num;
+        
         for(let loopCount = 0; loopCount < relatedAnime.related_anime.length; loopCount++){
             const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({id: relatedAnime.related_anime[loopCount].node.id});
             if(response.related_anime.length === 0){
                 return buffer;
             }
             let indexBuffer = Array(response.related_anime.length).fill(true);
-            //console.log("deep, ", response.id);
+            
             
             for(let x = 0; x < response.related_anime.length; x++){
                 for(let y = 0; y < relatedAnime.related_anime.length; y++){
                     if((relatedAnime.related_anime[y].node.id === response.related_anime[x].node.id) || (response.related_anime[x].node.id === relatedAnime.id)){
                         indexBuffer[x] = false;
-                        //console.log("yet, ", relatedAnime.id);
                     }
                 }
             }
-            console.log("here, ", response.id);
-            let indexCount = 0;
+            //console.log("here, ", response.id);
+           
             for(let x = 0; x < response.related_anime.length; x++){
-                console.log("X: ", x);
-                console.log("yet1, ", response.related_anime[x].node.id);
-                console.log("indexBuffer: ", indexBuffer[x]);
+                //console.log("X: ", x);
+                //console.log("yet1, ", response.related_anime[x].node.id);
+                //console.log("indexBuffer: ", indexBuffer[x]);
                 if(indexBuffer[x]){
-                    console.log("after count1, ", relatedAnime.id);
-                    
-
+                    //console.log("after count1, ", relatedAnime.id);
                     buffer.related_anime.push(response.related_anime[x]);
-                    console.log("after countnew, ", buffer); 
+                    //console.log("after countnew, ", buffer); 
                     globalIndexBuffer.push(response.id);
                 }         
             }
-            
-                
-                
-            
+                 
         }
         
         for(let x = 0; x < buffer.related_anime.length; x++){
@@ -386,26 +380,30 @@ const recursiveFill = async (client, relatedAnime) => {
             }
         }
         let duplicateIndex = 0;
-        
+        let resetIndex = 0;
         while(duplicateIndex >= 0){
             if(buffer.related_anime[duplicateIndex] === undefined && duplicateIndex < buffer.related_anime.length){
                 buffer.related_anime.splice(duplicateIndex, 1);
                 globalIndexBuffer.splice(duplicateIndex, 1);
-                console.log("how it happen: ", duplicateIndex);
-                duplicateIndex = 0;
+               // console.log("how it happen: ", duplicateIndex);
+                
+                resetIndex++;
             }
 
             if(duplicateIndex >= buffer.related_anime.length){
                 duplicateIndex = -5;
             }
-                duplicateIndex++;
-            
+            duplicateIndex++;
+            if(resetIndex > 0){
+                duplicateIndex = 0;
+                resetIndex = 0;
+            }
         }
         
-       console.log("buffer as it stands, ", buffer.related_anime);
-       console.log("buffer length: ", buffer.related_anime.length);
-        console.log("END!!!!!!");
-        console.log("               ");
+        //console.log("buffer as it stands, ", buffer.related_anime);
+        //console.log("buffer length: ", buffer.related_anime.length);
+        //console.log("END!!!!!!");
+        //console.log("               ");
         
         const originalLength = buffer.related_anime.length;
         if(originalLength > 0){
@@ -417,8 +415,24 @@ const recursiveFill = async (client, relatedAnime) => {
                     buffer.related_anime.push(...newBuffer.related_anime); 
                 }
             }
+        }
+        for(let x = 0; x < buffer.related_anime.length; x++){
+            for(let y = 0; y < buffer.related_anime.length; y++){
+                if(buffer.related_anime[y] && buffer.related_anime[x]){
+                    if(buffer.related_anime[x].node.id === buffer.related_anime[y].node.id && x !== y){
+                        delete buffer.related_anime[x];
+                    }
+                }
+            }
+        }
+        let finalBuffer = {related_anime: []};
+        for(let x = 0; x < buffer.related_anime.length; x++){
+            if(buffer.related_anime[x]){
+                finalBuffer.related_anime.push(buffer.related_anime[x]);
+            }
         } 
-        return buffer; 
+
+        return finalBuffer; 
        
     }else{
         return [];
@@ -433,12 +447,46 @@ app.get('/recursiveFill', async (req, res) => {
             console.log("error: ",  err);
             return;
         }
-        //for(let x = 4001; x <= 4000; x++){
-            const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({popularity: 1})
-            const buffer = await recursiveFill(client, response);
-            console.log("final buffer: ", buffer);
-        //}
-        res.send(buffer);
+        for(let j = 4000; j <= 4000; j++){ 
+            const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({popularity: j});
+            if(response.related_anime.length){
+                const buffer = await recursiveFill(client, response);
+                
+
+                //615 isekia quartet
+                //FINISHED
+                /* THINGS TO DO:
+                *   - TEST AND RUN FOR ALL 4000 ANIME
+                *   - ADD COMPARISON AND COLOR CHANGE FOR RELATED ANIME
+                *   - ADD SEPERATE COLLECTION FOR ALREADY USED DAILY ANIME
+                *   - ADD COOKIES TO REMEBER USER'S PREVIOUS GAMES/SCORE
+                *   - STYLE NAVBAR, ADD ICONS, BETTER COLORS ETC.
+                */   
+                
+                for(let x = 0; x < buffer.related_anime.length; x++){
+                    for(let y = 0; y < response.related_anime.length; y++){
+                        if(response.related_anime[y] && buffer.related_anime[x]){
+                            if(buffer.related_anime[x].node.id === response.related_anime[y].node.id && x !== y){
+                                delete buffer.related_anime[x];
+                            }
+                        }
+                    }
+                }
+
+                let finalBuffer = {related_anime: []};
+                for(let x = 0; x < buffer.related_anime.length; x++){
+                    if(buffer.related_anime[x]){
+                        finalBuffer.related_anime.push(buffer.related_anime[x]);
+                    }
+                } 
+                console.log("number: ", j);
+                await sleep(1000 * 5);
+                //console.log("final buffer: ", finalBuffer);
+                const update = await client.db('Anime-Guesser').collection('AnimeList').updateOne({popularity: j}, { $push: { related_anime: { $each: finalBuffer.related_anime } } })
+            }
+        }
+        console.log("final buffer1: ", update);
+        res.send(finalBuffer);
     }finally{
         await client.close();
     }
