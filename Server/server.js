@@ -39,16 +39,23 @@ const setDailyAnime = async () => {
                 usedForToday: false
             },
         };
+
+       
+
+        const currentDay = await client.db('Anime-Guesser').collection('AnimeList').findOne({usedForToday: true});
+        
+        const findYesturday = await client.db('Anime-Guesser').collection('AnimeList').updateOne({usedForToday: true}, updateDoc);
+        
         const updateDaily = {
             $set: {
                 usedForDaily: true,
-                usedForToday: true
+                usedForToday: true,
+                dayNumber: currentDay.dayNumber++
             },
         };
 
-        const findYesturday = await client.db('Anime-Guesser').collection('AnimeList').updateOne({usedForToday: true}, updateDoc);
         let findAnime = true;
-        let buffer = []
+        let buffer = [];
         while(findAnime){
             const randomNumber= crypto.randomInt(1, 4001);
             if(!buffer.find((e) => e === randomNumber)){
@@ -158,6 +165,28 @@ app.get('/', (req, res) =>{
     res.send('hello world');
 });
 
+app.get('/getArchive', async (req, res) => {
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+
+        const options = {
+            sort: { dayNumber: 1 },
+        }
+      
+        const response = await client.db('Anime-Guesser').collection('AnimeList').find({dayNumber: {$exists: true}}, options).toArray();
+        console.log("response Archive ", response);
+        res.json(response);
+    }finally{
+        await client.close();
+    }
+    
+})
+
 
 app.get('/getDailyAnime', async (req, res) => {
     const daily = await getDailyAnime();
@@ -231,10 +260,7 @@ app.get('/findSome', async (req, res) => {
 
 
 
-app.get('/makeGuess', async (req, res) =>{
-    const {guess} = req.query;
 
-});
 
 app.get('/search', async (req, res) => {
     
@@ -456,8 +482,6 @@ app.get('/recursiveFill', async (req, res) => {
                 //615 isekia quartet
                 //FINISHED
                 /* THINGS TO DO:
-                *   - TEST AND RUN FOR ALL 4000 ANIME
-                *   - ADD COMPARISON AND COLOR CHANGE FOR RELATED ANIME
                 *   - ADD SEPERATE COLLECTION FOR ALREADY USED DAILY ANIME
                 *   - ADD COOKIES TO REMEBER USER'S PREVIOUS GAMES/SCORE
                 *   - STYLE NAVBAR, ADD ICONS, BETTER COLORS ETC.

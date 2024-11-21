@@ -2,6 +2,10 @@ import { useState, useEffect, useRef, useCallback} from 'react';
 import axios from "axios";
 import './App.css';
 import Bones from "./svg/bones.jsx";
+import Info from "./svg/info.svg";
+
+import Archive from './components/Archive.jsx';
+import About from './components/About.jsx';
 
 function App() {
   
@@ -22,8 +26,16 @@ function App() {
   const [unveilAnime,  setUnveilAnime] = useState("grid");
 
   const [hintsDisplay, setHintsDisplay] = useState(Array(6).fill({genre:"flex", studio:"flex"}));
+  const [relatedAnimeHint, setRelatedAnimeHint] = useState(Array(6).fill(false));
 
+  //Archive State
+  const [archiveDisplay, setArchiveDisplay] = useState(false);
+  const [archiveData, setArchiveData] = useState(null);
 
+  //About State
+  const [aboutDisplay, setAboutDisplay] = useState(false);
+
+  //Anime Pixelization Ref's
   const imageRef = useRef();
   const imageAverageColors = useRef(new Array());
   const pixelRefArray =  useRef(new Array());
@@ -49,12 +61,33 @@ function App() {
     
   }, []);
 
-  
+
+  const handleLocalStorageCheck = (dailyData) => {
+    let check = localStorage.getItem(`DailyGuesses#${dailyData.dayNumber}`);
+    console.log("check: ", check);
+    
+    if(check){
+      let data = JSON.parse(check);
+
+    }
+
+  }
+
+  const getArchive = async () => {
+      await axios.get("http://localhost:8001/getArchive")
+      .then((response) => {
+          console.log("response Archive: ", response);
+          setArchiveDisplay(!archiveDisplay);
+          setArchiveData(response.data);
+      }).catch((err) => {
+          console.log("err: ", err);
+      });
+  }
 
 
 
 
-  useEffect( () => {
+  useEffect(() => {
     async function getDailyAnime(){ 
       await axios.get("http://localhost:8001/getDailyAnime")
       .then((response) => {
@@ -62,6 +95,7 @@ function App() {
         loadImage(response.data);
         setDailyAnimeInfo(response.data);
         setReveal(handleSectionReveal(1));
+        handleLocalStorageCheck(response.data);
       }).catch((err) => {
         console.log("error: ", err);
       });
@@ -148,7 +182,7 @@ function App() {
       BlueCount++;
 
     }
-    //console.log("countcheck: ", Red, RedCount);
+   
     const redAverage = Math.round(Red/RedCount);
     const greenAverage = Math.round(Green/GreenCount);
     const blueAverage = Math.round(Blue/BlueCount);
@@ -166,8 +200,6 @@ function App() {
       for(let y = 0; y < height; y+=16){
         for(let x = 0; x < width-1; x+=16){
           const colors = getHandleImageData(contextImage.current.getImageData(x,y,16,16));
-          
-          
           
           imageAverageColors.current.push(colors);
         }
@@ -198,9 +230,7 @@ function App() {
       
       pixelateInfo();
       
-    }
-  
-   
+    }   
   }
 
   
@@ -357,9 +387,10 @@ function App() {
   
     if(guessData){
       if(guessData.id === dailyAnimeInfo.id){
-        console.log("LETS FUCKING GO ENGALADAND");
+        
         setUnveilAnime("none");
         setShowDailyAnimeInfo("block");
+       
       }else{
         switch(lifeCounter){
           case 1:
@@ -368,6 +399,8 @@ function App() {
             setLife({...life, life1:true});
             setGuessDataHistory(array => [...array, guessData]);
             handleShowHint(5);
+            handleRelatedAnimeHint(5);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName6: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;
           case 2:
             setReveal(handleSectionReveal(6));
@@ -375,6 +408,8 @@ function App() {
             setLife({...life, life2:true});
             setGuessDataHistory(array => [...array, guessData]);
             handleShowHint(4);
+            handleRelatedAnimeHint(4);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName5: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;  
           case 3:
             setReveal(handleSectionReveal(5));
@@ -382,6 +417,8 @@ function App() {
             setLife({...life, life3:true});
             setGuessDataHistory(array => [...array, guessData]);
             handleShowHint(3);
+            handleRelatedAnimeHint(3);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName4: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;
           case 4:
             setReveal(handleSectionReveal(4));
@@ -389,6 +426,8 @@ function App() {
             setLife({...life, life4:true});
             setGuessDataHistory(array => [...array, guessData]);
             handleShowHint(2);
+            handleRelatedAnimeHint(2);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName3: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;
           case 5:
             setReveal(handleSectionReveal(3));
@@ -396,6 +435,8 @@ function App() {
             setLife({...life, life5:true});
             setGuessDataHistory(array => [...array, guessData]);
             handleShowHint(1);
+            handleRelatedAnimeHint(1);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName2: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;
           case 6:
             setReveal(handleSectionReveal(2));
@@ -403,17 +444,35 @@ function App() {
             setLife({...life, life6:true});
             setGuessDataHistory(array => [...array, guessData]);
             handleShowHint(0);
-            
+            handleRelatedAnimeHint(0);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName1: guessData.id}));
         }
       }
     }
   }
 
+  const handleRelatedAnimeHint = (num) => {
+    let tempArray;
+    for(let x = 0; x < dailyAnimeInfo.related_anime.length; x++){
+      if(dailyAnimeInfo.related_anime[x].node.id === guessData.id){
+        
+        tempArray = relatedAnimeHint.map((hint, index) => {
+          if(index === num){
+            return true;
+          }else{
+            return hint;
+          }
+        });
+        setRelatedAnimeHint(tempArray);
+      }
+    }
+  }
 
   const handleShowHint = (i) => {
     let tempArray;
     let matchStudioCount = 0;
     let matchGenreCount = 0;
+    
     if(guessData){
       
       guessData.studios.map((item) => {
@@ -431,6 +490,8 @@ function App() {
         }
       });
       
+    
+      console.log("matchrelatedAnime");
       if(matchGenreCount > 0 && matchStudioCount === 0){
 
         tempArray = hintsDisplay.map((hint, index) => {
@@ -657,14 +718,19 @@ function App() {
 
   const handleGuessHistory = (guessNum) =>{
     return(
-      <div className='guessInfo'>
-        <div className='guess'>
+      <div key={guessNum} className='guessInfo' >
+        {relatedAnimeHint[guessNum] ? 
+          <div className='relatedAnimeHint'>
+            <img height="25px" width="25px" src={Info}/>
+            <span className="tooltiptext">Related Series</span>
+          </div> : <></>}
+        <div className='guess' style={relatedAnimeHint[guessNum] ? {backgroundColor: "rgb(220, 184, 38)"} : {}}>
           {guessDataHistory[guessNum] === "Skip" ? (guessDataHistory[guessNum]) : (guessDataHistory[guessNum].alternative_titles.en.length > 18 ? guessDataHistory[guessNum].alternative_titles.en.slice(0,18) + "..." : guessDataHistory[guessNum].alternative_titles.en )}
           <span className="tooltiptext">{guessDataHistory[guessNum] === "Skip" ? guessDataHistory[guessNum] : guessDataHistory[guessNum].alternative_titles.en}</span>
         </div>
-        <span key={guessNum} className='hints' style={hintsDisplay[guessNum].genre === "none" && hintsDisplay[guessNum].studio === "none" ? {display:"none"} : {display: "flex"}}>
+        <span className='hints' style={(hintsDisplay[guessNum].genre === "none" && hintsDisplay[guessNum].studio === "none" ? {display:"none"} : (relatedAnimeHint[guessNum] ? {backgroundColor: "rgb(220, 184, 38)", display: "flex"} : {display: "flex"}))}>
           <div className='genres' style={{display:hintsDisplay[guessNum].genre}}>{handleGenres(guessNum)}</div>
-          <div className='studios' style={{display:hintsDisplay[guessNum].studio}}>{handleStudios(guessNum)}</div>
+          <div className='studios' style={relatedAnimeHint[guessNum] ? {display:hintsDisplay[guessNum].studio, borderLeft: "1.5px dashed #a958a5"} : {display:hintsDisplay[guessNum].studio}}>{handleStudios(guessNum)}</div>
         </span>
       </div>
     );
@@ -672,7 +738,6 @@ function App() {
 
   const handleGenres = (guessNum) => {
     if(guessDataHistory[guessNum].genres){
-      
       return guessDataHistory[guessNum].genres.map((item, index) => {
         for(let x = 0; x < dailyAnimeInfo.genres.length; x++){
           if(dailyAnimeInfo.genres[x].id === item.id){
@@ -685,7 +750,6 @@ function App() {
 
   const handleStudios = (guessNum) => {
     if(guessDataHistory[guessNum].studios){
-      
       return guessDataHistory[guessNum].studios.map((item, index) => {
         for(let x = 0; x < dailyAnimeInfo.studios.length; x++){
           if(dailyAnimeInfo.studios[x].id === item.id){
@@ -698,16 +762,19 @@ function App() {
 
   return (
     <>
+      <div className='backgroundImage'></div>
       <nav className='navbar-Container'>
-        <div className='siteName'>Anime Guesser</div>
-        <div className='utlities'>
-          <div>Archive</div>
-          &nbsp;&nbsp;
-          <div>About</div>
-        </div>
+        <div id="archive" onClick={() => getArchive()}>Archive</div>
+        <Archive archiveDisplay={archiveDisplay} setArchiveDisplay={setArchiveDisplay} archiveData={archiveData} setArchiveData={setArchiveData}/>
+        <div className='siteName'>AG</div>
+        <div id="about" onClick={() => setAboutDisplay(!aboutDisplay)}>About</div>
+        <About aboutDisplay={aboutDisplay} setAboutDisplay={setAboutDisplay}/>
+       
       </nav>
+      
       <div className='game-container'>
-      <div className='dailyAnime-Container'>
+      {dailyAnimeInfo ? <i className='dayCount'>Day {dailyAnimeInfo.dayNumber}</i> : <></>}
+      <div className='dailyAnime-Container' style={showDailyAnimeInfo === "block" ? {animation: "slide-left 3s ease"} : {}}>
         <div className="guessImageContainer">
           <canvas ref={imageRef} id="image"></canvas>
           <div id="pixel-container" style={{display: unveilAnime}}>
@@ -719,26 +786,62 @@ function App() {
           </div>
         </div>
         {dailyAnimeInfo ?
-          <div className="dailyAnimeInfo-Container" style={{display:showDailyAnimeInfo}}>
+          <div className="dailyAnimeInfo-Container" style={showDailyAnimeInfo === "block" ? {animation: "slide 3s ease", display: "block"} : {display:"none"}} >
             <h3 className='dailyAnimeInfo-Title'>{dailyAnimeInfo.title}</h3>
-            <div className='infoItem-Container'><div className="label">Year:&nbsp;</div><span>{dailyAnimeInfo.start_season.year}</span></div>
-            <div className='infoItem-Container'><div className="label">Episodes:&nbsp;</div><div>{dailyAnimeInfo.num_episodes}</div></div>
-            <div>Status: {dailyAnimeInfo.status === "finished_airing" ? "Finished Airing": dailyAnimeInfo.status}</div>
-            <div>MAL Score: {dailyAnimeInfo.mean}/10</div>
-            <div>MAL Rank: {dailyAnimeInfo.rank}</div>
-            <div>Rating: {dailyAnimeInfo.rating}</div>
-            <div>Type: {dailyAnimeInfo.media_type}</div>
-            <div>Synopsis: {dailyAnimeInfo.synopsis}</div>
-            <div>Genres: {dailyAnimeInfo.genres.map((genre, index) => {
-              return(<div key={index}>{genre.name}</div>)
-            })}</div>
-            <div>Studios: {dailyAnimeInfo.studios.map((studio, index) => {
-              if(studio.name === "Bones"){
-                return(<Bones />)
-              }else{
-                return(<div key={index}>{studio.name}</div>)
-              }
-            })}</div>
+            <div className='infoItem-Container'>
+              <div className="label">Year:&nbsp;</div>
+              <span>{dailyAnimeInfo.start_season.year}</span>
+            </div>
+            <div className='infoItem-Container'>
+              <div className="label">Episodes:&nbsp;</div>
+              <div>{dailyAnimeInfo.num_episodes}</div>
+            </div>
+            <div className='infoItem-Container'>
+              <div className="label">Status:&nbsp;</div>
+              <div>{dailyAnimeInfo.status === "finished_airing" ? "Finished Airing": dailyAnimeInfo.status}</div>
+            </div>
+            <div className='infoItem-Container'>
+              <div className="label">MAL Score:&nbsp;</div>
+              <div>{dailyAnimeInfo.mean}/10</div>
+            </div>
+            <div className='infoItem-Container'>
+              <div className="label">MAL Rank:&nbsp;</div>
+              <div>{dailyAnimeInfo.rank}</div>
+            </div>
+            <div className='infoItem-Container'>
+              <div className="label">Rating:&nbsp;</div>
+              <div>{dailyAnimeInfo.rating.toUpperCase()}</div>
+            </div>
+            <div className='infoItem-Container'>
+              <div className="label">Type:&nbsp;</div>
+              <div>{dailyAnimeInfo.media_type.toUpperCase()}</div>
+            </div>
+            &nbsp;&nbsp;
+            <div>
+              <div className="synopsis">Synopsis:&nbsp;</div>
+              <div>{dailyAnimeInfo.synopsis}</div>
+            </div>
+            &nbsp;&nbsp;
+            <div>
+              <div className="label">Genres:&nbsp;</div>
+              <ul className='infoList-Container'>
+              {dailyAnimeInfo.genres.map((genre, index) => {
+                  return(<li key={index}>{genre.name}</li>)
+                })}
+              </ul>
+            </div>
+            <div>
+              <div className="label">Studios:&nbsp;</div> 
+              <ul className='infoList-Container'>
+                {dailyAnimeInfo.studios.map((studio, index) => {
+                  if(studio.name === "Bones"){
+                    return(<Bones />)
+                  }else{
+                    return(<li key={index}>{studio.name}</li>)
+                  }
+                })}
+              </ul>
+            </div>
             <i className='altName-label'>Also Known as: </i>
             <i className='altName-label'>
               <div>{dailyAnimeInfo.alternative_titles.en}</div>
