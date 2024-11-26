@@ -356,7 +356,26 @@ app.get('/getById', async (req, res) => {
     
 });
 
+app.get('/getAnime', async (req, res) => {
+    const {id} = req.query;
+    
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+        console.log("id: ", id);
 
+        const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({id: parseInt(id, 10)});
+        console.log("response: ", response);
+        res.json(response);
+    }finally{
+        //await client.close();
+    }
+
+})
 
 const recursiveFill = async (client, relatedAnime) => {
     if(relatedAnime.related_anime.length > 0){

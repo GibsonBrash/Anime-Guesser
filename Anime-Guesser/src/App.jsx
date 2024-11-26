@@ -61,17 +61,96 @@ function App() {
     
   }, []);
 
+  const getArchiveGuessData = async (id) => {
+    let data;
+    await axios.get("http://localhost:8001/getAnime", {
+      params:{
+        id:id
+      },
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }).then((response) => {
+      console.log("new bitch: ", response.data);
+      data = response.data;
+    }).catch((err) => {
+      console.log("erryo: ", err);
+    });
+    return data;
+  }
 
-  const handleLocalStorageCheck = (dailyData) => {
+  const handleLocalStorageCheck = async (dailyData) => {
+    if(dailyData){
     let check = localStorage.getItem(`DailyGuesses#${dailyData.dayNumber}`);
     console.log("check: ", check);
     
     if(check){
       let data = JSON.parse(check);
+      if(data.guessName1){
+        
+        let guessInfo = await getArchiveGuessData(data.guessName1);
+        console.log("try me bitch: ", guessInfo);
+        setReveal(handleSectionReveal(2));
+        setLifeCounter(5);
+        setLife({...life, life6:true});
+        setGuessDataHistory(array => [...array, guessInfo]);
+        handlePreviousShowHint(0, guessInfo);
+        handlePreviousRelatedAnimeHint(0, guessInfo);
+
+      } 
+      if(data.guessName2){
+        let guessInfo = await getArchiveGuessData(data.guessName2);
+        setReveal(handleSectionReveal(3));
+        setLifeCounter(4);
+        setLife({...life, life5:true});
+        setGuessDataHistory(array => [...array, guessInfo]);
+        handlePreviousShowHint(1, guessInfo);
+        handlePreviousRelatedAnimeHint(1, guessInfo);
+      } 
+      if(data.guessName3){
+        let guessInfo = await getArchiveGuessData(data.guessName3);
+        setReveal(handleSectionReveal(4));
+        setLifeCounter(3);
+        setLife({...life, life4:true});
+        setGuessDataHistory(array => [...array, guessInfo]);
+        handlePreviousShowHint(2, guessInfo);
+        handlePreviousRelatedAnimeHint(2, guessInfo);
+      } 
+      if(data.guessName4){
+        let guessInfo = await getArchiveGuessData(data.guessName4);
+        setReveal(handleSectionReveal(5));
+        setLifeCounter(2);
+        setLife({...life, life3:true});
+        setGuessDataHistory(array => [...array, guessInfo]);
+        handlePreviousShowHint(3, guessInfo);
+        handlePreviousRelatedAnimeHint(3, guessInfo);
+      } 
+      if(data.guessName5){
+        let guessInfo = await getArchiveGuessData(data.guessName5);
+        setReveal(handleSectionReveal(6));
+        setLifeCounter(1);
+        setLife({...life, life2:true});
+        setGuessDataHistory(array => [...array, guessInfo]);
+        handlePreviousShowHint(4, guessInfo);
+        handlePreviousRelatedAnimeHint(4, guessInfo);
+        
+      } 
+      if(data.guessName6){
+        let guessInfo = await getArchiveGuessData(data.guessName6);
+        setUnveilAnime("none");
+        setShowDailyAnimeInfo("block");
+        setLife({...life, life1:true});
+        setGuessDataHistory(array => [...array, guessInfo]);
+        handlePreviousShowHint(5, guessInfo);
+        handlePreviousRelatedAnimeHint(5, guessInfo);
+      }
 
     }
-
   }
+  }
+
+
+
 
   const getArchive = async () => {
       await axios.get("http://localhost:8001/getArchive")
@@ -84,8 +163,92 @@ function App() {
       });
   }
 
+  useEffect(() => {
+    handleLocalStorageCheck(dailyAnimeInfo);
+  },[dailyAnimeInfo])
 
 
+  const handlePreviousRelatedAnimeHint = (num, info) =>{
+    let tempArray;
+      for(let x = 0; x < dailyAnimeInfo.related_anime.length; x++){
+        if(dailyAnimeInfo.related_anime[x].node.id === info.id){
+          
+          tempArray = relatedAnimeHint.map((hint, index) => {
+            if(index === num){
+              return true;
+            }else{
+              return hint;
+            }
+          });
+          setRelatedAnimeHint(tempArray);
+        }
+      }
+  }
+
+  const handlePreviousShowHint = (i, info) => {
+    let tempArray;
+    let matchStudioCount = 0;
+    let matchGenreCount = 0;
+    
+    if(info){
+      
+      info.studios.map((item) => {
+        for(let x = 0; x < dailyAnimeInfo.studios.length; x++){
+          if(dailyAnimeInfo.studios[x].id === item.id){
+            matchStudioCount++;
+          }
+        }
+      });
+      info.genres.map((item) => {
+        for(let x = 0; x < dailyAnimeInfo.genres.length; x++){
+          if(dailyAnimeInfo.genres[x].id === item.id){
+            matchGenreCount++;
+          }
+        }
+      });
+      
+    
+      console.log("matchrelatedAnime");
+      if(matchGenreCount > 0 && matchStudioCount === 0){
+
+        tempArray = hintsDisplay.map((hint, index) => {
+          if(index === i){
+            return {
+              studio: "none"
+            };
+          }else{
+            return hint;
+          }
+        });
+        setHintsDisplay(tempArray);
+      }else if(matchGenreCount === 0 && matchStudioCount > 0){
+        
+        tempArray = hintsDisplay.map((hint, index) => {
+          if(index === i){
+            return {
+              genre: "none",
+            };
+          }else{
+            return hint;
+          }
+        });
+        setHintsDisplay(tempArray);
+      }else if(matchGenreCount === 0 && matchStudioCount === 0){
+     
+        tempArray = hintsDisplay.map((hint, index) => {
+          if(index === i){
+            return {
+              genre: "none",
+              studio: "none"
+            };
+          }else{
+            return hint;
+          }
+        });
+        setHintsDisplay(tempArray);
+      }
+    }
+  }
 
   useEffect(() => {
     async function getDailyAnime(){ 
@@ -95,12 +258,15 @@ function App() {
         loadImage(response.data);
         setDailyAnimeInfo(response.data);
         setReveal(handleSectionReveal(1));
-        handleLocalStorageCheck(response.data);
+        
+       
       }).catch((err) => {
         console.log("error: ", err);
       });
     }
     getDailyAnime();
+    
+    
    
   },[])
 
@@ -452,20 +618,22 @@ function App() {
   }
 
   const handleRelatedAnimeHint = (num) => {
-    let tempArray;
-    for(let x = 0; x < dailyAnimeInfo.related_anime.length; x++){
-      if(dailyAnimeInfo.related_anime[x].node.id === guessData.id){
-        
-        tempArray = relatedAnimeHint.map((hint, index) => {
-          if(index === num){
-            return true;
-          }else{
-            return hint;
-          }
-        });
-        setRelatedAnimeHint(tempArray);
+  
+      let tempArray;
+      for(let x = 0; x < dailyAnimeInfo.related_anime.length; x++){
+        if(dailyAnimeInfo.related_anime[x].node.id === guessData.id){
+          
+          tempArray = relatedAnimeHint.map((hint, index) => {
+            if(index === num){
+              return true;
+            }else{
+              return hint;
+            }
+          });
+          setRelatedAnimeHint(tempArray);
+        }
       }
-    }
+    
   }
 
   const handleShowHint = (i) => {
@@ -717,6 +885,7 @@ function App() {
  
 
   const handleGuessHistory = (guessNum) =>{
+    console.log("guessdatahistroy: ", guessDataHistory[guessNum]);
     return(
       <div key={guessNum} className='guessInfo' >
         {relatedAnimeHint[guessNum] ? 
