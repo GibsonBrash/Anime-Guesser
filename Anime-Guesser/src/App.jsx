@@ -35,6 +35,8 @@ function App() {
   //About State
   const [aboutDisplay, setAboutDisplay] = useState(false);
 
+  const [count, setCount] = useState(1);
+
   //Anime Pixelization Ref's
   const imageRef = useRef();
   const imageAverageColors = useRef(new Array());
@@ -61,8 +63,9 @@ function App() {
     
   }, []);
 
-  const getArchiveGuessData = async (id) => {
+  const getArchiveGuessData = async (id, num) => {
     let data;
+    console.log("new bitch: ", num);
     await axios.get("http://localhost:8001/getAnime", {
       params:{
         id:id
@@ -71,86 +74,411 @@ function App() {
         "Content-Type": "application/json"
       }
     }).then((response) => {
-      console.log("new bitch: ", response.data);
+      
       data = response.data;
+
+      handlePreviousStorageInfo(response.data, num);
     }).catch((err) => {
       console.log("erryo: ", err);
     });
     return data;
   }
 
+  const handlePreviousStorageInfo = (data, num) => {
+    console.log(`yo: ${num}`, data);
+    setGuessDataHistory(array => [...array, ...data.reverse()]);
+    //handlePreviousShowHint(num, data);
+   // handlePreviousRelatedAnimeHint(num, data);
+
+    switch(num){
+      case 5:
+        setLife({life1:true, life2:true, life3:true, life4:true, life5:true, life6:true});
+        break;
+      case 4:
+        setLife({...life, life2:true, life3:true, life4:true, life5:true, life6:true});
+        break;
+      case 3:
+        setLife({...life, life3:true, life4:true, life5:true, life6:true});
+        break;
+      case 2:
+        setLife({...life, life4:true, life5:true, life6:true});
+        break;
+      case 1:
+        setLife({...life, life5:true, life6:true});
+        break;
+      case 0:
+        setLife({...life, life6:true});
+        break;
+    }
+    
+  }
+
   const handleLocalStorageCheck = async (dailyData) => {
     if(dailyData){
-    let check = localStorage.getItem(`DailyGuesses#${dailyData.dayNumber}`);
-    console.log("check: ", check);
-    
-    if(check){
-      let data = JSON.parse(check);
-      if(data.guessName1){
-        
-        let guessInfo = await getArchiveGuessData(data.guessName1);
-        console.log("try me bitch: ", guessInfo);
-        setReveal(handleSectionReveal(2));
-        setLifeCounter(5);
-        setLife({...life, life6:true});
-        setGuessDataHistory(array => [...array, guessInfo]);
-        handlePreviousShowHint(0, guessInfo);
-        handlePreviousRelatedAnimeHint(0, guessInfo);
+      let check = localStorage.getItem(`DailyGuesses#${dailyData.dayNumber}`);
+      
+      
+      if(check){
+        const data = JSON.parse(check);
+        const dataLength = Object.keys(data).length;
+        console.log("checkeinga ds: ", dataLength);
+        if(data.guessName1 && !data.guessname2 && !data.guessname3 && !data.guessname4 && !data.guessname5 && !data.guessname6){
+          console.log("checkyurasdf: ", data);
+        }
+        switch(dataLength){
 
-      } 
-      if(data.guessName2){
-        let guessInfo = await getArchiveGuessData(data.guessName2);
-        setReveal(handleSectionReveal(3));
-        setLifeCounter(4);
-        setLife({...life, life5:true});
-        setGuessDataHistory(array => [...array, guessInfo]);
-        handlePreviousShowHint(1, guessInfo);
-        handlePreviousRelatedAnimeHint(1, guessInfo);
-      } 
-      if(data.guessName3){
-        let guessInfo = await getArchiveGuessData(data.guessName3);
-        setReveal(handleSectionReveal(4));
-        setLifeCounter(3);
-        setLife({...life, life4:true});
-        setGuessDataHistory(array => [...array, guessInfo]);
-        handlePreviousShowHint(2, guessInfo);
-        handlePreviousRelatedAnimeHint(2, guessInfo);
-      } 
-      if(data.guessName4){
-        let guessInfo = await getArchiveGuessData(data.guessName4);
-        setReveal(handleSectionReveal(5));
-        setLifeCounter(2);
-        setLife({...life, life3:true});
-        setGuessDataHistory(array => [...array, guessInfo]);
-        handlePreviousShowHint(3, guessInfo);
-        handlePreviousRelatedAnimeHint(3, guessInfo);
-      } 
-      if(data.guessName5){
-        let guessInfo = await getArchiveGuessData(data.guessName5);
-        setReveal(handleSectionReveal(6));
-        setLifeCounter(1);
-        setLife({...life, life2:true});
-        setGuessDataHistory(array => [...array, guessInfo]);
-        handlePreviousShowHint(4, guessInfo);
-        handlePreviousRelatedAnimeHint(4, guessInfo);
-        
-      } 
-      if(data.guessName6){
-        let guessInfo = await getArchiveGuessData(data.guessName6);
-        setUnveilAnime("none");
-        setShowDailyAnimeInfo("block");
-        setLife({...life, life1:true});
-        setGuessDataHistory(array => [...array, guessInfo]);
-        handlePreviousShowHint(5, guessInfo);
-        handlePreviousRelatedAnimeHint(5, guessInfo);
+          
+          case 1:
+            console.log("Sectionone");
+            //let guessInfo =  getArchiveGuessData(data.guessName1);
+            //console.log("try me bitch: ", guessInfo);
+            setReveal(handleSectionReveal(2));
+            setLifeCounter(5);
+            setLife({...life, life6:true});
+            setGuessDataHistory(array => [...array, guessInfo]);
+            handlePreviousShowHint(0, guessInfo);
+            handlePreviousRelatedAnimeHint(0, guessInfo);
+            break;
+          
+          case 2:
+            //let guessInfo =  getArchiveGuessData(data.guessName2);
+            console.log("Sectiontwo");
+            setReveal(handleSectionReveal(3));
+            setReveal(handleSectionReveal(2));
+
+            setLifeCounter(4);
+            setLife({...life, life5:true, life6:true});
+            setGuessDataHistory(array => [...array, guessInfo]);
+            handlePreviousShowHint(1, guessInfo);
+            handlePreviousRelatedAnimeHint(1, guessInfo);
+            break;
+          case 3:
+            //let guessInfo =  getArchiveGuessData(data.guessName3);
+            console.log("Sectionthree");
+            setReveal(handleSectionReveal(4));
+            setReveal(handleSectionReveal(3));
+            setReveal(handleSectionReveal(2));
+
+            setLifeCounter(3);
+            setLife({...life, life4:true, life5:true, life6:true});
+            setGuessDataHistory(array => [...array, guessInfo]);
+            handlePreviousShowHint(2, guessInfo);
+            handlePreviousRelatedAnimeHint(2, guessInfo);
+            break;
+          case 4:
+          // let guessInfo4 =  getArchiveGuessData(data.guessName4);
+            //let guessInfo3 =  getArchiveGuessData(data.guessName3);
+          // let guessInfo2 =  getArchiveGuessData(data.guessName2);
+          // let guessInfo1 =  getArchiveGuessData(data.guessName1);
+          console.log("Sectionfour");
+            setReveal(handleSectionReveal(5));
+            setReveal(handleSectionReveal(4));
+            setReveal(handleSectionReveal(3));
+            setReveal(handleSectionReveal(2));
+
+            setLifeCounter(2);
+            setLife({...life, life3:true, life4:true, life5:true, life6:true});
+            setGuessDataHistory(array => [...array, guessInfo1]);
+            handlePreviousShowHint(3, guessInfo3);
+            handlePreviousRelatedAnimeHint(3, guessInfo3);
+            break;
+          case 5:
+            console.log("Sectionfive");
+            
+
+            getArchiveGuessData(data, 4);
+
+            setReveal(handlePreviousSectionReveal(6));
+            setLifeCounter(1);
+           
+            /*
+            handlePreviousRelatedAnimeHint(4, guessInfo5);
+            handlePreviousRelatedAnimeHint(3, guessInfo4);
+            handlePreviousRelatedAnimeHint(2, guessInfo3);
+            handlePreviousRelatedAnimeHint(1, guessInfo2);
+            handlePreviousRelatedAnimeHint(0, guessInfo1);
+            */
+
+          break;
+          case 6:
+            //let guessInfo =  getArchiveGuessData(data.guessName6);
+            setUnveilAnime("none");
+            setShowDailyAnimeInfo("block");
+            
+            setGuessDataHistory(array => [...array, guessInfo]);
+            handlePreviousShowHint(5, guessInfo);
+            handlePreviousRelatedAnimeHint(5, guessInfo);
+            break;
+        }
       }
-
     }
   }
+
+
+  const handlePreviousSectionReveal = (guessNum) => {
+    switch(guessNum){
+      case 1:
+        return (
+          reveal.map((input, index) => {
+            switch(index){
+              case 5:
+                return !input;
+              case 6: 
+                return !input;
+              case 12:
+                return !input;
+              case 13:
+                return !input;
+              case 19:
+                return !input;
+              case 20:
+                return !input;  
+              default:
+                return input;
+            }
+         }));
+      case 2:
+        return( 
+          reveal.map((input, index) => {
+            switch(index){ 
+              case 21:
+                return !input;
+              case 22: 
+                return !input;
+              case 28:
+                return !input;
+              case 29:
+                return !input;
+              case 35:
+                return !input;
+              case 36:
+                return !input;  
+              default:
+                return input;
+            }
+          }));
+      case 3:
+        return(
+          reveal.map((input, index) => {
+            switch(index){
+              case 21:
+                return !input;
+              case 22: 
+                return !input;
+              case 28:
+                return !input;
+              case 29:
+                return !input;
+              case 35:
+                return !input;
+              case 36:
+                return !input;  
+              case 54:
+                return !input;
+              case 55: 
+                return !input;
+              case 61:
+                return !input;
+              case 62:
+                return !input;
+              case 68:
+                return !input;
+              case 69:
+                return !input;  
+              default:
+                return input;
+            }
+          }));
+      case 4:
+        return(
+          reveal.map((input, index) => {
+            switch(index){ 
+              case 21:
+                return !input;
+              case 22: 
+                return !input;
+              case 28:
+                return !input;
+              case 29:
+                return !input;
+              case 35:
+                return !input;
+              case 36:
+                return !input;  
+              case 54:
+                return !input;
+              case 55: 
+                return !input;
+              case 61:
+                return !input;
+              case 62:
+                return !input;
+              case 68:
+                return !input;
+              case 69:
+                return !input; 
+              case 52:
+                return !input;
+              case 53: 
+                return !input;
+              case 59:
+                return !input;
+              case 60:
+                return !input;
+              case 66:
+                return !input;
+              case 67:
+                return !input;  
+              default:
+                return input;
+            }
+          }));
+      case 5:
+        return(
+          reveal.map((input, index) => {
+            switch(index){
+              case 21:
+                return !input;
+              case 22: 
+                return !input;
+              case 28:
+                return !input;
+              case 29:
+                return !input;
+              case 35:
+                return !input;
+              case 36:
+                return !input;  
+              case 54:
+                return !input;
+              case 55: 
+                return !input;
+              case 61:
+                return !input;
+              case 62:
+                return !input;
+              case 68:
+                return !input;
+              case 69:
+                return !input; 
+              case 52:
+                return !input;
+              case 53: 
+                return !input;
+              case 59:
+                return !input;
+              case 60:
+                return !input;
+              case 66:
+                return !input;
+              case 67:
+                return !input; 
+              case 26:
+                return !input;
+              case 27: 
+                return !input;
+              case 33:
+                return !input;
+              case 34:
+                return !input;
+              case 40:
+                return !input;
+              case 41:
+                return !input; 
+              case 47:
+                return !input;
+              case 48:
+                return !input;  
+              default:
+                return input;
+            }
+          }))
+      case 6:
+        return(
+          reveal.map((input, index) => {
+            switch(index){ 
+              case 21:
+                return !input;
+              case 22: 
+                return !input;
+              case 28:
+                return !input;
+              case 29:
+                return !input;
+              case 35:
+                return !input;
+              case 36:
+                return !input;  
+              case 54:
+                return !input;
+              case 55: 
+                return !input;
+              case 61:
+                return !input;
+              case 62:
+                return !input;
+              case 68:
+                return !input;
+              case 69:
+                return !input; 
+              case 52:
+                return !input;
+              case 53: 
+                return !input;
+              case 59:
+                return !input;
+              case 60:
+                return !input;
+              case 66:
+                return !input;
+              case 67:
+                return !input; 
+              case 26:
+                return !input;
+              case 27: 
+                return !input;
+              case 33:
+                return !input;
+              case 34:
+                return !input;
+              case 40:
+                return !input;
+              case 41:
+                return !input; 
+              case 47:
+                return !input;
+              case 48:
+                return !input;
+              case 23:
+                return !input;
+              case 24:
+                return !input;
+              case 25: 
+                return !input;
+              case 30: 
+                return !input;
+              case 31:
+                return !input;
+              case 32:
+                return !input;
+              case 37: 
+                return !input;
+              case 38:
+                return !input;
+              case 39:
+                return !input;
+              case 44:
+                return !input;
+              case 45:
+                return !input;
+              case 46:
+                return !input;   
+              default:
+                return input;
+            }
+          }));
+    }
   }
-
-
-
 
   const getArchive = async () => {
       await axios.get("http://localhost:8001/getArchive")
@@ -164,7 +492,12 @@ function App() {
   }
 
   useEffect(() => {
-    handleLocalStorageCheck(dailyAnimeInfo);
+    if(dailyAnimeInfo != null){
+      console.log("ghiiasdf",guessDataHistory);
+      handleLocalStorageCheck(dailyAnimeInfo);
+      
+    }
+    
   },[dailyAnimeInfo])
 
 
@@ -208,7 +541,7 @@ function App() {
       });
       
     
-      console.log("matchrelatedAnime");
+      //console.log("matchrelatedAnime");
       if(matchGenreCount > 0 && matchStudioCount === 0){
 
         tempArray = hintsDisplay.map((hint, index) => {
@@ -264,8 +597,10 @@ function App() {
         console.log("error: ", err);
       });
     }
-    getDailyAnime();
-    
+    if(dailyAnimeInfo === null){
+      console.log("heasdfasdfasdfasdfasf");
+      getDailyAnime();
+    }
     
    
   },[])
@@ -885,7 +1220,8 @@ function App() {
  
 
   const handleGuessHistory = (guessNum) =>{
-    console.log("guessdatahistroy: ", guessDataHistory[guessNum]);
+    
+    if(guessNum === 1){console.log("gueshistory bitch: ", guessDataHistory)} 
     return(
       <div key={guessNum} className='guessInfo' >
         {relatedAnimeHint[guessNum] ? 

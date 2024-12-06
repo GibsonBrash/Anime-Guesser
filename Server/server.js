@@ -366,10 +366,19 @@ app.get('/getAnime', async (req, res) => {
             console.log("error: ",  err);
             return;
         }
-        console.log("id: ", id);
-
-        const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({id: parseInt(id, 10)});
-        console.log("response: ", response);
+        //console.log("id: ", id);
+       
+        const values = Object.entries(id).map(([key, value]) => {
+            return value;
+        });
+        //console.log("yo mr white: ", values[1]);
+         const response = [];
+        for(let x = 0; x < values.length; x++){
+            if(values[x] !== "skip"){
+                response.push(await client.db('Anime-Guesser').collection('AnimeList').findOne({id: parseInt(values[x], 10)}));
+            }
+        }
+        //console.log("yo jessie: ", response[0]);
         res.json(response);
     }finally{
         //await client.close();
