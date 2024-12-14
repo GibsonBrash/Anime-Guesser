@@ -374,8 +374,10 @@ app.get('/getAnime', async (req, res) => {
         //console.log("yo mr white: ", values[1]);
          const response = [];
         for(let x = 0; x < values.length; x++){
-            if(values[x] !== "skip"){
+            if(values[x] !== "Skip"){
                 response.push(await client.db('Anime-Guesser').collection('AnimeList').findOne({id: parseInt(values[x], 10)}));
+            }else{
+                response.push("Skip");
             }
         }
         //console.log("yo jessie: ", response[0]);

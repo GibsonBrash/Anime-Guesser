@@ -15,7 +15,9 @@ function Archive({aboutDisplay, setAboutDisplay}) {
                     <div>Created by</div>
                     &nbsp;
                     <div>Jonas Wojtas</div>
+                    
                 </div>
+                <a href="">Portfolio</a>
             </div>
         </>
     )

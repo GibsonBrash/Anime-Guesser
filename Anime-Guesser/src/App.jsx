@@ -35,7 +35,6 @@ function App() {
   //About State
   const [aboutDisplay, setAboutDisplay] = useState(false);
 
-  const [count, setCount] = useState(1);
 
   //Anime Pixelization Ref's
   const imageRef = useRef();
@@ -47,12 +46,8 @@ function App() {
 
   const dropdownRef = useCallback(node => {
     if (!node) return;
-      const resizeObserver = new ResizeObserver(() => { 
-        console.log("node1, ", node.clientHeight);
-        console.log("drop1, ", dropDownHeight);
+      const resizeObserver = new ResizeObserver(() => {  
          if(node.clientHeight < 200 && node.clientHeight > 0){
-            console.log("node, ", node.clientHeight);
-            console.log("drop, ", dropDownHeight);
             setDropDownHeight("fit-content");
           }else if(node.clientHeight >= 200){
             setDropDownHeight("200px");
@@ -64,8 +59,6 @@ function App() {
   }, []);
 
   const getArchiveGuessData = async (id, num) => {
-    let data;
-    console.log("new bitch: ", num);
     await axios.get("http://localhost:8001/getAnime", {
       params:{
         id:id
@@ -74,20 +67,17 @@ function App() {
         "Content-Type": "application/json"
       }
     }).then((response) => {
-      
-      data = response.data;
-
-      handlePreviousStorageInfo(response.data, num);
+      handlePreviousStorageInfo(response.data.reverse(), num);
     }).catch((err) => {
       console.log("erryo: ", err);
     });
-    return data;
+   
   }
 
   const handlePreviousStorageInfo = (data, num) => {
-    console.log(`yo: ${num}`, data);
-    setGuessDataHistory(array => [...array, ...data.reverse()]);
-    handlePreviousShowHint(num, data);
+
+    setGuessDataHistory(array => [...array, ...data]);
+    handlePreviousShowHint(data);
     handlePreviousRelatedAnimeHint(num, data);
 
     switch(num){
@@ -122,63 +112,35 @@ function App() {
         const dataLength = Object.keys(data).length;
         
         switch(dataLength){
-
-          
           case 1:
-           
             getArchiveGuessData(data, 0);
-           
             setReveal(handlePreviousSectionReveal(2));
             setLifeCounter(5);
-         
-            //handlePreviousShowHint(0, guessInfo);
-            //handlePreviousRelatedAnimeHint(0, guessInfo);
             break;
-          
           case 2:
             getArchiveGuessData(data, 1);
             setReveal(handlePreviousSectionReveal(3));
             setLifeCounter(4);
-
-            //handlePreviousShowHint(1, guessInfo);
-            //handlePreviousRelatedAnimeHint(1, guessInfo);
             break;
           case 3:
             getArchiveGuessData(data, 2);
             setReveal(handlePreviousSectionReveal(4));
             setLifeCounter(3);
-    
-            //handlePreviousShowHint(2, guessInfo);
-            //handlePreviousRelatedAnimeHint(2, guessInfo);
             break;
           case 4:
             getArchiveGuessData(data, 3);
             setReveal(handlePreviousSectionReveal(5));
             setLifeCounter(2);
-            //handlePreviousShowHint(3, guessInfo3);
-            //handlePreviousRelatedAnimeHint(3, guessInfo3);
             break;
           case 5:
             getArchiveGuessData(data, 4);
             setReveal(handlePreviousSectionReveal(6));
             setLifeCounter(1);
-           
-            /*
-            handlePreviousRelatedAnimeHint(4, guessInfo5);
-            handlePreviousRelatedAnimeHint(3, guessInfo4);
-            handlePreviousRelatedAnimeHint(2, guessInfo3);
-            handlePreviousRelatedAnimeHint(1, guessInfo2);
-            handlePreviousRelatedAnimeHint(0, guessInfo1);
-            */
-
           break;
           case 6:
             getArchiveGuessData(data, 5);
             setUnveilAnime("none");
             setShowDailyAnimeInfo("block");
-            
-            //handlePreviousShowHint(5, guessInfo);
-            //handlePreviousRelatedAnimeHint(5, guessInfo);
             break;
         }
       }
@@ -464,7 +426,7 @@ function App() {
 
   useEffect(() => {
     if(dailyAnimeInfo != null){
-      console.log("ghiiasdf",guessDataHistory);
+      //console.log("ghiiasdf",guessDataHistory);
       handleLocalStorageCheck(dailyAnimeInfo);
       
     }
@@ -473,111 +435,78 @@ function App() {
 
 
   const handlePreviousRelatedAnimeHint = (num, info) =>{
-    let tempArray = [];
+    let tempArray = Array(6).fill(false);
    
     for(let y = 0; y <= num; y++){ 
       for(let x = 0; x < dailyAnimeInfo.related_anime.length; x++){
-        if(dailyAnimeInfo.related_anime[x].node.id === info[y].id){ 
-          tempArray.push(relatedAnimeHint.map((hint, index) => {
-            if(index === y){
-              return true;
-            }else{
-              return hint;
-            }
-          }));
+        if(info[y] !== "Skip"){
+          if(dailyAnimeInfo.related_anime[x].node.id === info[y].id){ 
+            tempArray[y] = true;
+          }
         }
       }
       
     }
     
-    let tempofTempArray = new Array(6).fill(false);
-    for(let x = 0; x < tempArray.length; x++){
-      for(let y = 0; y < 6; y++){
-        if(tempArray[x][y]){
-          tempofTempArray[x] = true;
-        }
-      }
-    }
-    //console.log("relatedAnimetempPEEE: ", tempofTempArray);
-    setRelatedAnimeHint(tempofTempArray);
+    //console.log("tepasdf: ", tempArray);
+    setRelatedAnimeHint(tempArray);
   }
 
-  const handlePreviousShowHint = (i, info) => {
-    let tempArray = [];
-    console.log("hintsDisplay: ", hintsDisplay);
+  const handlePreviousShowHint = (info) => {
+    let tempArray = Array(6).fill({genre:"flex", studio:"flex"});
+    //console.log("info.length: ", info);
     
     if(info){
       for(let j = 0; j < info.length; j++){
-        let matchStudioCount = 0;
-        let matchGenreCount = 0;
-        info[j].studios.map((item) => {
-          for(let x = 0; x < dailyAnimeInfo.studios.length; x++){
-            if(dailyAnimeInfo.studios[x].id === item.id){
-              matchStudioCount++;
+        if(info[j] !== "Skip"){
+          let matchStudioCount = 0;
+          let matchGenreCount = 0;
+          info[j].studios.map((item) => {
+            for(let x = 0; x < dailyAnimeInfo.studios.length; x++){
+              if(dailyAnimeInfo.studios[x].id === item.id){
+                matchStudioCount++;
+              }
             }
-          }
-        });
-        info[j].genres.map((item) => {
-          for(let x = 0; x < dailyAnimeInfo.genres.length; x++){
-            if(dailyAnimeInfo.genres[x].id === item.id){
-              matchGenreCount++;
+          });
+          info[j].genres.map((item) => {
+            for(let x = 0; x < dailyAnimeInfo.genres.length; x++){
+              if(dailyAnimeInfo.genres[x].id === item.id){
+                matchGenreCount++;
+              }
             }
-          }
-        });
+          });
+          
+          if(matchGenreCount > 0 && matchStudioCount === 0){
+            
+            tempArray[j] = {
+              studio: "none"
+            }
+            
+          }else if(matchGenreCount === 0 && matchStudioCount > 0){
+            
+            tempArray[j] = {
+              genre: "none",
+            }
+            
+          }else if(matchGenreCount === 0 && matchStudioCount === 0){
         
-      
-        //console.log("matchrelatedAnime");
-        if(matchGenreCount > 0 && matchStudioCount === 0){
-
-          tempArray.push(hintsDisplay.map((hint, index) => {
-            if(index === j){
-              return {
-                studio: "none"
-              };
-            }else{
-              return hint;
+            tempArray[j] = {
+              genre: "none",
+              studio: "none"
             }
-          }));
-          
-        }else if(matchGenreCount === 0 && matchStudioCount > 0){
-          
-          tempArray.push(hintsDisplay.map((hint, index) => {
-            if(index === j){
-              return {
-                genre: "none",
-              };
-            }else{
-              return hint;
-            }
-          }));
-          
-        }else if(matchGenreCount === 0 && matchStudioCount === 0){
-      
-          tempArray.push(hintsDisplay.map((hint, index) => {
-            if(index === j){
-              return {
-                genre: "none",
-                studio: "none"
-              };
-            }else{
-              return hint;
-            }
-          }));
-          
-        }
-      }
-      //console.log("teampippingarrayOMGBITCH: ", tempArray);
-      let tempofTempArray = new Array(6).fill({genre: "flex", studio: "flex"});
-      for(let x = 0; x < tempArray.length; x++){
-        for(let y = 0; y < 6; y++){
-          if(tempArray[x][y].genre === "none" || tempArray[x][y].studio === "none"){
-            tempofTempArray[x] = tempArray[x][y];
+            
           }
+        }else{
+   
+          tempArray[j] = {
+            genre: "none",
+            studio: "none"
+          }
+          
         }
       }
       
-      //console.log("teampippingarray: ", tempofTempArray);
-      setHintsDisplay(tempofTempArray);
+      setHintsDisplay(tempArray);
     }
   }
 
@@ -596,7 +525,7 @@ function App() {
       });
     }
     if(dailyAnimeInfo === null){
-      console.log("heasdfasdfasdfasdfasf");
+      //console.log("heasdfasdfasdfasdfasf");
       getDailyAnime();
     }
     
@@ -1121,6 +1050,7 @@ function App() {
               }
             });
             setHintsDisplay(tempArrayS1);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName6: "Skip", ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;
           case 2:
             setLifeCounter(1);
@@ -1138,6 +1068,7 @@ function App() {
               }
             });
             setHintsDisplay(tempArrayS2);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName5: "Skip", ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;  
           case 3:
             setLifeCounter(2);
@@ -1155,6 +1086,7 @@ function App() {
               }
             });
             setHintsDisplay(tempArrayS3);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName4: "Skip", ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;
           case 4:
             setLifeCounter(3);
@@ -1172,7 +1104,7 @@ function App() {
               }
             });
             setHintsDisplay(tempArrayS4);
-            
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName3: "Skip", ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;
           case 5:
             setLifeCounter(4);
@@ -1190,8 +1122,7 @@ function App() {
               }
             });
             setHintsDisplay(tempArrayS5);
-            
-            
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName2: "Skip", ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
             break;
           case 6:
             setLifeCounter(5);
@@ -1208,8 +1139,8 @@ function App() {
                   return hint;
                 }
             });
-            
             setHintsDisplay(tempArrayS6);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName1: "Skip"}));
             break;
             
         }
@@ -1218,8 +1149,6 @@ function App() {
  
 
   const handleGuessHistory = (guessNum) =>{
-    
-  
     return(
       <div key={guessNum} className='guessInfo' >
         {relatedAnimeHint[guessNum] ? 

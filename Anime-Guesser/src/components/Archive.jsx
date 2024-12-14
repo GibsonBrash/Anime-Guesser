@@ -43,12 +43,12 @@ function Archive({archiveDisplay, setArchiveDisplay, archiveData, setArchiveData
                 <div className='Archive-Title'>Archive</div>
                 <div className='Archive-Guesses'>
                     {
-                    archiveData ? <>{archiveData.map((data) => {
+                    archiveData ? <>{archiveData.map((data, i) => {
                         return(
-                            <>
+                            <div key={i} className='Day-Container'> 
                                 <div>Day {data.dayNumber}</div>
                                 <div className='Guess-Container'>{parseLocalStorage(data)}</div>
-                            </>
+                            </div>
                         )
                     })}</> :
                     <>
