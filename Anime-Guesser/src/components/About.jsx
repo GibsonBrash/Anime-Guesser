@@ -14,8 +14,7 @@ function Archive({aboutDisplay, setAboutDisplay}) {
                 <div className='About-Main'>
                     <div>Created by</div>
                     &nbsp;
-                    <div>Jonas Wojtas</div>
-                    
+                    <div>Jonas Wojtas</div>  
                 </div>
                 <a href="">Portfolio</a>
             </div>

@@ -23,7 +23,6 @@
 .Archive-Exit{
     position: absolute;
     -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: #871838;
     right:6%;
 }
 
@@ -38,14 +37,37 @@
 
 .Archive-Guesses{
     display: flex;
-
+    width:80%;
     font-size: medium;
+    
+    flex-direction: column;
+}
+
+.Archive-Link{
+    text-decoration: none;
+    color:white;
+    width:100%;
+    
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.Archive-Link:hover{
+    background-color: #EBBABF;
 }
 
 .Day-Container{
     display: flex;
+    margin-left: 5%;
+    
+}
+
+.Day-Container:hover{
+    cursor: pointer;
+   
 }
 
 .Guess-Container{
     display: flex;
+    margin-left: 5px;
 }

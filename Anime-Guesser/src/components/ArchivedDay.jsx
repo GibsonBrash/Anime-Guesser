@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback} from 'react';
 import axios from "axios";
-import './App.css';
-import Bones from "./svg/bones.jsx";
-import Info from "./svg/info.svg";
+import '../App.css';
+import Bones from "../svg/bones.jsx";
+import Info from "../svg/info.svg";
+import { useParams } from 'react-router-dom';
 
-import Archive from './components/Archive.jsx';
-import About from './components/About.jsx';
+import Archive from './Archive.jsx';
+import About from './About.jsx';
 
-function App() {
+function ArchivedDay() {
   
   const [reveal, setReveal] = useState(Array(70).fill(false));
   const [searchResults, setSearchResults] = useState();
@@ -35,6 +36,7 @@ function App() {
   //About State
   const [aboutDisplay, setAboutDisplay] = useState(false);
 
+  const { dayNumber } = useParams();
 
   //Anime Pixelization Ref's
   const imageRef = useRef();
@@ -58,7 +60,6 @@ function App() {
     
   }, []);
 
-  
 
   const getArchiveGuessData = async (id, num) => {
     await axios.get("http://localhost:8001/getAnime", {
@@ -514,7 +515,15 @@ function App() {
 
   useEffect(() => {
     async function getDailyAnime(){ 
-      await axios.get("http://localhost:8001/getDailyAnime")
+      
+      await axios.get("http://localhost:8001/getArchiveByDay", {
+        params:{
+          day:dayNumber
+        },
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
       .then((response) => {
         console.log("anime daily iamge, ", response.data);  
         loadImage(response.data);
@@ -1333,4 +1342,4 @@ function App() {
 }
 
 
-export default App
+export default ArchivedDay

@@ -23,7 +23,8 @@ const client = new MongoClient(process.env.MONGODB_URI, {
     }
 });
 
-//setInterval(setDailyAnime,1000 * 60 * 60 * 24);
+//update every 24 hours: setInterval(() => setDailyAnime(),1000 * 60 * 60 * 24);
+
 
 const setDailyAnime = async () => {
     try{
@@ -42,18 +43,13 @@ const setDailyAnime = async () => {
 
        
 
-        const currentDay = await client.db('Anime-Guesser').collection('AnimeList').findOne({usedForToday: true});
+        let currentDay = await client.db('Anime-Guesser').collection('AnimeList').findOne({usedForToday: true});
         
         const findYesturday = await client.db('Anime-Guesser').collection('AnimeList').updateOne({usedForToday: true}, updateDoc);
         
-        const updateDaily = {
-            $set: {
-                usedForDaily: true,
-                usedForToday: true,
-                dayNumber: currentDay.dayNumber++
-            },
-        };
+        
 
+        
         let findAnime = true;
         let buffer = [];
         while(findAnime){
@@ -61,7 +57,13 @@ const setDailyAnime = async () => {
             if(!buffer.find((e) => e === randomNumber)){
                 const findNew = await client.db('Anime-Guesser').collection('AnimeList').findOne({rank: randomNumber});
                 if(findNew.usedForDaily !== true){
-                    const setNew = await client.db('Anime-Guesser').collection('AnimeList').updateOne({rank: findNew.rank}, updateDaily);
+                    const setNew = await client.db('Anime-Guesser').collection('AnimeList').updateOne({rank: findNew.rank}, {
+                        $set: {
+                            usedForDaily: true,
+                            usedForToday: true,
+                            dayNumber: currentDay.dayNumber + 1
+                        },
+                    });
                     console.log("setnew ", setNew);
                     findAnime = false;
                 }
@@ -73,7 +75,7 @@ const setDailyAnime = async () => {
         
         
     }finally{
-        await client.close();
+        
     }
 }
 
@@ -91,7 +93,7 @@ const getDailyAnime = async () => {
         }
         findDaily = await client.db('Anime-Guesser').collection('AnimeList').findOne({usedForToday: true});
         if ((await client.db('Anime-Guesser').collection('AnimeList').countDocuments({usedForToday: true})) === 0) {
-            console.log("reponse, ", response);
+            console.log("reponse, ");
         }
 
         console.log("response, ", findDaily);
@@ -185,8 +187,32 @@ app.get('/getArchive', async (req, res) => {
         await client.close();
     }
     
-})
+});
 
+app.get('/getArchiveByDay', async (req, res) => {
+    try{
+        try{
+            await client.connect();
+        }catch(err){
+            console.log("error: ",  err);
+            return;
+        }
+        const { day } = req.query;
+        
+        const response = await client.db('Anime-Guesser').collection('AnimeList').findOne({dayNumber: parseInt(day)})
+        console.log("response Archive ", response);
+        res.json(response);
+    }finally{
+        await client.close();
+    }
+    
+});
+
+
+app.get('/setDailyAnime', async (req, res) => {
+    const daily = await setDailyAnime();
+    res.json(daily);
+});
 
 app.get('/getDailyAnime', async (req, res) => {
     const daily = await getDailyAnime();

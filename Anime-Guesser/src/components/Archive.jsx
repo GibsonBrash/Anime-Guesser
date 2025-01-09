@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef} from 'react';
-import axios from "axios";
+
 
 import './Archive.css';
 
+
 function Archive({archiveDisplay, setArchiveDisplay, archiveData, setArchiveData}) {
 
-    //line up day number off anime with local storage day number in key
+    
     //add game over and you win screen for respected out cum, make game over be "NANI?!?" and win be "omedetou"
     const parseLocalStorage = (day) => {
         let data = JSON.parse(localStorage.getItem(`DailyGuesses#${day.dayNumber}`))
-        console.log("yo archive data: ", data);
+        
         return(
             <>
                 {data ? 
@@ -45,10 +45,12 @@ function Archive({archiveDisplay, setArchiveDisplay, archiveData, setArchiveData
                     {
                     archiveData ? <>{archiveData.map((data, i) => {
                         return(
-                            <div key={i} className='Day-Container'> 
-                                <div>Day {data.dayNumber}</div>
-                                <div className='Guess-Container'>{parseLocalStorage(data)}</div>
-                            </div>
+                            <a className="Archive-Link" key={i} href={'/Archive/' + data.dayNumber}> 
+                                <div  className='Day-Container' > 
+                                    <div>Day {data.dayNumber}:</div>
+                                    <div className='Guess-Container'>{parseLocalStorage(data)}</div>
+                                </div>
+                            </a>
                         )
                     })}</> :
                     <>
