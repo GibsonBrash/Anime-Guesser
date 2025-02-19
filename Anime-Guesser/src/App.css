@@ -29,8 +29,6 @@ body::before{
   padding-top:5px;
   padding-bottom:5px;
   font-size:30px;
-  
-
 }
 
 .dayCount{
@@ -42,6 +40,8 @@ body::before{
 
 #archive{
   margin-right: 25px;
+  width:35px;
+  height:35px;
 }
 
 
@@ -65,7 +65,9 @@ body::before{
 
 #about{
   margin-left: 25px;
-  margin-right: 25px;
+  
+  width:35px;
+  height:35px;
 }
 
 .utlities{
@@ -229,16 +231,20 @@ body::before{
   color:black;
   overflow: scroll;
   margin:0;
-  text-shadow: 1px 1px lightgray;
-  
+  text-shadow: none;
+  text-align: left;
 }
 
 .guessList{
   list-style-type: none;
   padding:0;
+  
 }
 .guessList li{
   border-bottom: 1px lightgray solid;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 14px;
 }
 .guessList li:hover{
   background-color: rgb(211, 211, 211);
@@ -262,12 +268,14 @@ body::before{
   height:2rem;
   cursor: pointer;
   
-  border: .05rem solid white;
-  box-shadow: 0px 0px 80px 10px  #EBBABF;
+  border: .05rem solid hsl(19, 83%, 65%);
+  box-shadow: -1px 1px hsl(19, 83%, 65%), -2px 2px hsl(19, 83%, 65%), -3px 3px hsl(19, 83%, 65%);
 }
 
 .skipButton:hover{
-  background-color:  	hsl(19, 83%, 65%);
+  background-color:	hsl(19, 83%, 65%);
+  border: 1px solid #f4aa89;
+  box-shadow: -1px 1px #f4aa89, -2px 2px #f4aa89, -3px 3px #f4aa89;
 }
 
 
@@ -275,28 +283,33 @@ body::before{
   width: 60%;
   border:0;
   border-radius: .1rem;
-  background-color: #12355F;
+  background-color: hsl(213, 68%, 30%);
   font-weight: 900;
   font-size:15px;
   text-shadow: 1px 1px black;
   height:2rem;
   cursor: pointer;
 
-  border: .05rem solid white;
-  box-shadow: 0px 0px 80px 10px  #EBBABF;
+  border: 1px solid #12355F;
+  box-shadow: -1px 1px #12355F, -2px 2px #12355F, -3px 3px #12355F;
 }
 
 .guessButton:hover{
-  background-color:  	hsl(213, 68%, 30%);
+  background-color: #12355F;
+  border: 1px solid hsl(213, 68%, 30%);
+  box-shadow: 1px -1px hsl(213, 68%, 30%), 2px -2px hsl(213, 68%, 30%), 3px -3px hsl(213, 68%, 30%);
 }
 
 .lifeCounter{
   display: flex;
   width:225px;
   margin-top: 1rem;
+  justify-content: space-between;
 }
 .life{
-  font-size:small;
+  height:30px;
+  width:30px;
+ 
 }
 
 .guess{
@@ -306,6 +319,14 @@ body::before{
   height: 30px;
   margin-top: .5rem;
   background-color: #871838;
+
+  border:#5c1026 1px solid;
+  
+
+ 
+  box-shadow:  -1px 1px #5c1026,
+		 -2px 2px #5c1026,
+		 -3px 3px #5c1026;
   
 }
 
@@ -354,9 +375,16 @@ body::before{
   left:16rem;
   top:.5rem;
   background-color: #871838;
+  
   height: 30px;
-  border-radius:0 10px 10px 0;
+  border:#5c1026 1px solid;
+  
 
+  border-radius:0 10px 10px 0;
+  box-shadow:  -1px 1px #5c1026,
+		 -2px 2px #5c1026,
+		 -3px 3px #5c1026;
+		 
 }
 
 .genres{

@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef} from 'react';
-import axios from "axios";
+
 
 import './About.css';
 
@@ -15,7 +14,11 @@ function Archive({aboutDisplay, setAboutDisplay}) {
                     <div>Created by</div>
                     &nbsp;
                     <div>Jonas Wojtas</div>  
+                    
                 </div>
+                &nbsp;
+                <div className='About-Thanks'>Big Thanks to Gamedle for being my muse as you can probably tell</div>
+                <a href="https://www.freepik.com/user/collection">Icon by Freepik</a>
                 <a href="">Portfolio</a>
             </div>
         </>

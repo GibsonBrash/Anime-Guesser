@@ -1,11 +1,16 @@
 import { useState, useEffect, useRef, useCallback} from 'react';
 import axios from "axios";
 import './App.css';
-import Bones from "./svg/bones.jsx";
-import Info from "./svg/info.svg";
+import StudioLogos from './components/StudioLogos.jsx';
+
+import LifeUsed from './svg/LifeUsed.png';
+import LifeFull from './svg/LifeFull.png';
+import ArchiveIcon from './svg/Archive.png';
+import AboutIcon from './svg/About.png';
 
 import Archive from './components/Archive.jsx';
 import About from './components/About.jsx';
+import HandleGuessHistory from './components/handleGuessHistory.jsx';
 
 function App() {
   
@@ -1150,60 +1155,15 @@ function App() {
 
  
 
-  const handleGuessHistory = (guessNum) =>{
-    return(
-      <div key={guessNum} className='guessInfo' >
-        {relatedAnimeHint[guessNum] ? 
-          <div className='relatedAnimeHint'>
-            <img height="25px" width="25px" src={Info}/>
-            <span className="tooltiptext">Related Series</span>
-          </div> : <></>}
-        <div className='guess' style={relatedAnimeHint[guessNum] ? {backgroundColor: "rgb(220, 184, 38)"} : {}}>
-          {guessDataHistory[guessNum] === "Skip" ? (guessDataHistory[guessNum]) : (guessDataHistory[guessNum].alternative_titles.en.length > 18 ? guessDataHistory[guessNum].alternative_titles.en.slice(0,18) + "..." : guessDataHistory[guessNum].alternative_titles.en )}
-          <span className="tooltiptext">{guessDataHistory[guessNum] === "Skip" ? guessDataHistory[guessNum] : guessDataHistory[guessNum].alternative_titles.en}</span>
-        </div>
-        <span className='hints' style={(hintsDisplay[guessNum].genre === "none" && hintsDisplay[guessNum].studio === "none" ? {display:"none"} : (relatedAnimeHint[guessNum] ? {backgroundColor: "rgb(220, 184, 38)", display: "flex"} : {display: "flex"}))}>
-          <div className='genres' style={{display:hintsDisplay[guessNum].genre}}>{handleGenres(guessNum)}</div>
-          <div className='studios' style={relatedAnimeHint[guessNum] ? {display:hintsDisplay[guessNum].studio, borderLeft: "1.5px dashed #a958a5"} : {display:hintsDisplay[guessNum].studio}}>{handleStudios(guessNum)}</div>
-        </span>
-      </div>
-    );
-  }
-
-  const handleGenres = (guessNum) => {
-    if(guessDataHistory[guessNum].genres){
-      return guessDataHistory[guessNum].genres.map((item, index) => {
-        for(let x = 0; x < dailyAnimeInfo.genres.length; x++){
-          if(dailyAnimeInfo.genres[x].id === item.id){
-            return(<div style={{marginLeft: "10px"}} key={index}>{item.name}</div>);
-          }
-        }
-      });
-    }
-  }
-
-  const handleStudios = (guessNum) => {
-    if(guessDataHistory[guessNum].studios){
-      return guessDataHistory[guessNum].studios.map((item, index) => {
-        for(let x = 0; x < dailyAnimeInfo.studios.length; x++){
-          if(dailyAnimeInfo.studios[x].id === item.id){
-            return(<div style={{marginLeft: "10px"}} key={index}>{item.name}</div>);
-          }
-        }
-      });
-    }
-  }
-
   return (
     <>
       <div className='backgroundImage'></div>
       <nav className='navbar-Container'>
-        <div id="archive" onClick={() => getArchive()}>Archive</div>
+        <img src={ArchiveIcon} id="archive" onClick={() => getArchive()}/>
         <Archive archiveDisplay={archiveDisplay} setArchiveDisplay={setArchiveDisplay} archiveData={archiveData} setArchiveData={setArchiveData} />
         <div className='siteName'>AG</div>
-        <div id="about" onClick={() => setAboutDisplay(!aboutDisplay)}>About</div>
+        <img src={AboutIcon} id="about" onClick={() => setAboutDisplay(!aboutDisplay)}/>
         <About aboutDisplay={aboutDisplay} setAboutDisplay={setAboutDisplay}/>
-       
       </nav>
       
       <div className='game-container'>
@@ -1268,11 +1228,15 @@ function App() {
               <div className="label">Studios:&nbsp;</div> 
               <ul className='infoList-Container'>
                 {dailyAnimeInfo.studios.map((studio, index) => {
+                  
+                  return(<StudioLogos studio={studio}/>)
+                  /*
                   if(studio.name === "Bones"){
                     return(<Bones />)
                   }else{
                     return(<li key={index}>{studio.name}</li>)
                   }
+                    */
                 })}
               </ul>
             </div>
@@ -1289,11 +1253,12 @@ function App() {
           <></>
         }
       </div>
+      { (showDailyAnimeInfo === "block") ? <div>Winner</div> :
       <div className='guessField-Container'>
         <input className="guessField" autoComplete='off' onFocus={() => handleDropDownFocus()} onBlur={() => handleDropDownBlur()} onChange={(e) => {setGuessValue(e.target.value); setGuessData(null)}} placeholder='Search for an Anime' value={guessValue}/>
         <div className='dropDown' style={{display: showDropDown, height: dropDownHeight}}>
           {loadSpinner ? 
-          <div>8===D</div> :
+          <div>Loading...</div> :
           <ul ref={dropdownRef} className='guessList'>
             {
               searchResults ? searchResults.map((item, index) =>{
@@ -1309,22 +1274,22 @@ function App() {
           <button className="skipButton" onClick={() => handleSkip()}>Skip</button>
           <button className="guessButton" onClick={() => handleDisplay()}>Guess</button>
         </div>
-      </div>
+      </div>}
       <div className='lifeCounter'>
-        { life.life1 ? <div>X</div> : <div className='life'>Life 1</div> }
-        { life.life2 ? <div>X</div> : <div className='life'>Life 2</div> }
-        { life.life3 ? <div>X</div> : <div className='life'>Life 3</div> }
-        { life.life4 ? <div>X</div> : <div className='life'>Life 4</div> }
-        { life.life5 ? <div>X</div> : <div className='life'>Life 5</div> }
-        { life.life6 ? <div>X</div> : <div className='life'>Life 6</div> }
+        { life.life1 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
+        { life.life2 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
+        { life.life3 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
+        { life.life4 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
+        { life.life5 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
+        { life.life6 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
       </div>
       <div className='guessHistory'>
-        { life.life6 ? handleGuessHistory(0) : <></> }
-        { life.life5 ? handleGuessHistory(1) : <></> }
-        { life.life4 ? handleGuessHistory(2) : <></> }
-        { life.life3 ? handleGuessHistory(3) : <></> }
-        { life.life2 ? handleGuessHistory(4) : <></> }
-        { life.life1 ? handleGuessHistory(5) : <></> }
+        { life.life6 ? <HandleGuessHistory guessNum={0} guessDataHistory={guessDataHistory} dailyAnimeInfo={dailyAnimeInfo} relatedAnimeHint={relatedAnimeHint} hintsDisplay={hintsDisplay}/> : <></> }
+        { life.life5 ? <HandleGuessHistory guessNum={1} guessDataHistory={guessDataHistory} dailyAnimeInfo={dailyAnimeInfo} relatedAnimeHint={relatedAnimeHint} hintsDisplay={hintsDisplay}/> : <></> }
+        { life.life4 ? <HandleGuessHistory guessNum={2} guessDataHistory={guessDataHistory} dailyAnimeInfo={dailyAnimeInfo} relatedAnimeHint={relatedAnimeHint} hintsDisplay={hintsDisplay}/> : <></> }
+        { life.life3 ? <HandleGuessHistory guessNum={3} guessDataHistory={guessDataHistory} dailyAnimeInfo={dailyAnimeInfo} relatedAnimeHint={relatedAnimeHint} hintsDisplay={hintsDisplay}/> : <></> }
+        { life.life2 ? <HandleGuessHistory guessNum={4} guessDataHistory={guessDataHistory} dailyAnimeInfo={dailyAnimeInfo} relatedAnimeHint={relatedAnimeHint} hintsDisplay={hintsDisplay}/> : <></> }
+        { life.life1 ? <HandleGuessHistory guessNum={5} guessDataHistory={guessDataHistory} dailyAnimeInfo={dailyAnimeInfo} relatedAnimeHint={relatedAnimeHint} hintsDisplay={hintsDisplay}/> : <></> }
       </div>
         
       </div>

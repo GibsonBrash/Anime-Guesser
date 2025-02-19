@@ -5,7 +5,7 @@ import './Archive.css';
 
 function Archive({archiveDisplay, setArchiveDisplay, archiveData, setArchiveData}) {
 
-    
+    //add sakura leaves or something like that as the lifes/guess counter
     //add game over and you win screen for respected out cum, make game over be "NANI?!?" and win be "omedetou"
     const parseLocalStorage = (day) => {
         let data = JSON.parse(localStorage.getItem(`DailyGuesses#${day.dayNumber}`))

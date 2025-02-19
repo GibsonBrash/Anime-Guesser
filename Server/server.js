@@ -305,6 +305,8 @@ app.get('/search', async (req, res) => {
         
         const filter = {
             $or:[
+                {title:{$regex: `${query}`, $options:"i"}},
+                {"alternative_titles.en":{$regex: `${query}`, $options:"i"}},
                 {title:{$regex: `^${query}`, $options:"i"}},
                 {"alternative_titles.en":{$regex: `^${query}`, $options:"i"}},
                 {"alternative_titles.synonyms":{$in:[query]}}
@@ -313,7 +315,7 @@ app.get('/search', async (req, res) => {
 
         
         
-        const response = await client.db('Anime-Guesser').collection('AnimeList').find(filter).toArray();
+        const response = await client.db('Anime-Guesser').collection('AnimeList').find(filter).sort({popularity:1}).toArray();
         if ((await client.db('Anime-Guesser').collection('AnimeList').countDocuments(filter)) === 0) {
             console.log("reponse, ", response);
         }
