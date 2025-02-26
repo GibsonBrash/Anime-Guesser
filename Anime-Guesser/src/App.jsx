@@ -10,7 +10,7 @@ import AboutIcon from './svg/About.png';
 
 import Archive from './components/Archive.jsx';
 import About from './components/About.jsx';
-import HandleGuessHistory from './components/handleGuessHistory.jsx';
+import HandleGuessHistory from './components/HandleGuessHistory.jsx';
 
 function App() {
   
@@ -66,7 +66,7 @@ function App() {
   
 
   const getArchiveGuessData = async (id, num) => {
-    await axios.get("http://localhost:8001/getAnime", {
+    await axios.get("https://anime-guesser-server.vercel.app/getAnime", {
       params:{
         id:id
       },
@@ -421,7 +421,7 @@ function App() {
   }
 
   const getArchive = async () => {
-      await axios.get("http://localhost:8001/getArchive")
+      await axios.get("https://anime-guesser-server.vercel.app/getArchive")
       .then((response) => {
           //console.log("response Archive: ", response);
           setArchiveDisplay(!archiveDisplay);
@@ -519,7 +519,7 @@ function App() {
 
   useEffect(() => {
     async function getDailyAnime(){ 
-      await axios.get("http://localhost:8001/getDailyAnime")
+      await axios.get("https://anime-guesser-server.vercel.app/getDailyAnime")
       .then((response) => {
         console.log("anime daily iamge, ", response.data);  
         loadImage(response.data);
@@ -973,7 +973,7 @@ function App() {
 
   const handleGuess = async () => {
     
-      await axios.get(`http://localhost:8001/search`, {
+      await axios.get(`https://anime-guesser-server.vercel.app/search`, {
         params:{
           query:guessValue
         },
