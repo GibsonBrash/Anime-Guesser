@@ -442,3 +442,23 @@ body::before{
 .relatedAnimeHint:hover .tooltiptext {
   visibility: visible;
 }
+
+.Winner{
+  font-size: 60px;
+  color:rgb(0, 221, 0);
+}
+.Winner span{
+  animation: animate 1s ease-in-out infinite;
+  animation-delay: calc(0.1s * var("--i"));
+}
+@keyframes animate{
+  0%{
+    transform: translateY(0px);
+  }
+  20%{
+    transform: translateY(-20px);
+  }
+  40%,100%{
+    transform: translateY(0px);
+  }
+}
