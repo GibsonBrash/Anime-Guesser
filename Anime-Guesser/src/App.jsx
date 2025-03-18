@@ -1298,15 +1298,7 @@ function App() {
               <div className="label">Studios:&nbsp;</div> 
               <ul className='infoList-Container'>
                 {dailyAnimeInfo.studios.map((studio, index) => {
-                  
                   return(<StudioLogos studio={studio}/>)
-                  /*
-                  if(studio.name === "Bones"){
-                    return(<Bones />)
-                  }else{
-                    return(<li key={index}>{studio.name}</li>)
-                  }
-                    */
                 })}
               </ul>
             </div>

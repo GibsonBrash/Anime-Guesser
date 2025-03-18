@@ -124,27 +124,52 @@ function ArchivedDay() {
           case 1:
             getArchiveGuessData(data, 0);
             setReveal(handlePreviousSectionReveal(2));
-            setLifeCounter(5);
+            if(parseInt(data.guessName1) == dailyAnimeInfo.id){
+              setUnveilAnime("none");
+              setShowDailyAnimeInfo("block");
+            }else{
+              setLifeCounter(5);
+            }
             break;
           case 2:
             getArchiveGuessData(data, 1);
             setReveal(handlePreviousSectionReveal(3));
-            setLifeCounter(4);
+            if(parseInt(data.guessName2) == dailyAnimeInfo.id){
+              setUnveilAnime("none");
+              setShowDailyAnimeInfo("block");
+            }else{
+              setLifeCounter(4);
+            }
             break;
           case 3:
             getArchiveGuessData(data, 2);
             setReveal(handlePreviousSectionReveal(4));
-            setLifeCounter(3);
+            if(parseInt(data.guessName3) == dailyAnimeInfo.id){
+              setUnveilAnime("none");
+              setShowDailyAnimeInfo("block");
+            }else{
+              setLifeCounter(3);
+            }
             break;
           case 4:
             getArchiveGuessData(data, 3);
             setReveal(handlePreviousSectionReveal(5));
-            setLifeCounter(2);
+            if(parseInt(data.guessName4) == dailyAnimeInfo.id){
+              setUnveilAnime("none");
+              setShowDailyAnimeInfo("block");
+            }else{
+              setLifeCounter(2);
+            }
             break;
           case 5:
             getArchiveGuessData(data, 4);
             setReveal(handlePreviousSectionReveal(6));
-            setLifeCounter(1);
+            if(parseInt(data.guessName5) == dailyAnimeInfo.id){
+              setUnveilAnime("none");
+              setShowDailyAnimeInfo("block");
+            }else{
+              setLifeCounter(1);
+            }
           break;
           case 6:
             getArchiveGuessData(data, 5);
@@ -835,6 +860,51 @@ function ArchivedDay() {
         
         setUnveilAnime("none");
         setShowDailyAnimeInfo("block");
+        switch(lifeCounter){
+          case 1:
+            setLife({...life, life1:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            handleShowHint(5);
+            handleRelatedAnimeHint(5);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName6: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
+            break;
+          case 2:
+            setLife({...life, life2:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            handleShowHint(4);
+            handleRelatedAnimeHint(4);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName5: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
+            break;
+          case 3:
+            setLife({...life, life3:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            handleShowHint(3);
+            handleRelatedAnimeHint(3);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName4: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
+            break;
+          case 4:
+            setLife({...life, life4:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            handleShowHint(2);
+            handleRelatedAnimeHint(2);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName3: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
+            break;
+          case 5:
+            setLife({...life, life5:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            handleShowHint(1);
+            handleRelatedAnimeHint(1);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName2: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
+            break;
+          case 6:
+            setLife({...life, life6:true});
+            setGuessDataHistory(array => [...array, guessData]);
+            handleShowHint(0);
+            handleRelatedAnimeHint(0);
+            localStorage.setItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`, JSON.stringify({guessName1: guessData.id, ...JSON.parse(localStorage.getItem(`DailyGuesses#${dailyAnimeInfo.dayNumber}`))}));
+            break;
+          
+        }
        
       }else{
         switch(lifeCounter){
@@ -1262,6 +1332,7 @@ function ArchivedDay() {
           <></>
         }
       </div>
+      { (showDailyAnimeInfo === "block") ? <div className='Winner'><i><span style={{ "--i": 1 }}>W</span><span style={{ "--i": 2 }}>I</span><span style={{ "--i": 3 }}>N</span><span style={{ "--i": 4 }}>N</span><span style={{ "--i": 5 }}>E</span><span style={{ "--i": 6 }}>R</span> 勝者</i></div> :
       <div className='guessField-Container'>
         <input className="guessField" autoComplete='off' onFocus={() => handleDropDownFocus()} onBlur={() => handleDropDownBlur()} onChange={(e) => {setGuessValue(e.target.value); setGuessData(null)}} placeholder='Search for an Anime' value={guessValue}/>
         <div className='dropDown' style={{display: showDropDown, height: dropDownHeight}}>
@@ -1282,8 +1353,8 @@ function ArchivedDay() {
           <button className="skipButton" onClick={() => handleSkip()}>Skip</button>
           <button className="guessButton" onClick={() => handleDisplay()}>Guess</button>
         </div>
-      </div>
-      <div className='lifeCounter'>
+      </div>}
+      <div className='lifeCounter' style={(showDailyAnimeInfo === "block") ? {display: "none"} : {}}>
         { life.life1 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
         { life.life2 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
         { life.life3 ? <img className='life' src={LifeUsed}/> : <img className='life' src={LifeFull}/> }
